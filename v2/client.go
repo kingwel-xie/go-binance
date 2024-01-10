@@ -1022,3 +1022,43 @@ func (c *Client) NewSubAccountFuturesAccountService() *SubAccountFuturesAccountS
 func (c *Client) NewSubAccountFuturesSummaryV1Service() *SubAccountFuturesSummaryV1Service {
 	return &SubAccountFuturesSummaryV1Service{c: c}
 }
+
+// NewListSimpleEarnFlexibleService init listing simple-earn flexible service
+func (c *Client) NewListSimpleEarnFlexibleService() *ListSimpleEarnFlexibleService {
+	return &ListSimpleEarnFlexibleService{c: c}
+}
+
+// NewListSimpleEarnLockedService init listing simple-earn locked service
+func (c *Client) NewListSimpleEarnLockedService() *ListSimpleEarnLockedService {
+	return &ListSimpleEarnLockedService{c: c}
+}
+
+// NewSubscribeSimpleEarnFlexibleService subscribe to simple-earn flexible service
+func (c *Client) NewSubscribeSimpleEarnFlexibleService() *SubscribeSimpleEarnFlexibleService {
+	return &SubscribeSimpleEarnFlexibleService{c: c}
+}
+
+// NewSubscribeSimpleEarnLockedService subscribe to simple-earn locked service
+func (c *Client) NewSubscribeSimpleEarnLockedService() *SubscribeSimpleEarnLockedService {
+	return &SubscribeSimpleEarnLockedService{c: c}
+}
+
+// NewRedeemSimpleEarnFlexibleService redeem simple-earn flexible service
+func (c *Client) NewRedeemSimpleEarnFlexibleService() *RedeemSimpleEarnFlexibleService {
+	return &RedeemSimpleEarnFlexibleService{c: c}
+}
+
+// NewRedeemSimpleEarnLockedService redeem simple-earn locked service
+func (c *Client) NewRedeemSimpleEarnLockedService() *RedeemSimpleEarnLockedService {
+	return &RedeemSimpleEarnLockedService{c: c}
+}
+
+// NewGetSimpleEarnFlexiblePositionService returns simple-earn flexible position service
+func (c *Client) NewGetSimpleEarnFlexiblePositionService() *GetSimpleEarnFlexiblePositionService {
+	return &GetSimpleEarnFlexiblePositionService{c: c}
+}
+
+// NewGetSimpleEarnLockedPositionService returns simple-earn locked position service
+func (c *Client) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
+	return &GetSimpleEarnLockedPositionService{c: c}
+}
