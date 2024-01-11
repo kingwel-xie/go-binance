@@ -483,44 +483,29 @@ func (s *GetSimpleEarnLockedPositionService) Do(ctx context.Context) (res *GetSi
 
 // GetSimpleEarnLockedPositionResponse represents the simple-earn flexible postion.
 type GetSimpleEarnLockedPositionResponse struct {
-	Rows []struct {
-		PositionID            int    `json:"positionId"`
-		ProjectID             string `json:"projectId"`
-		Asset                 string `json:"asset"`
-		Amount                string `json:"amount"`
-		PurchaseTime          string `json:"purchaseTime"`
-		Duration              string `json:"duration"`
-		AccrualDays           string `json:"accrualDays"`
-		RewardAsset           string `json:"rewardAsset"`
-		APY                   string `json:"APY"`
-		RewardAmt             string `json:"rewardAmt"`
-		ExtraRewardAsset      string `json:"extraRewardAsset"`
-		ExtraRewardAPR        string `json:"extraRewardAPR"`
-		EstExtraRewardAmt     string `json:"estExtraRewardAmt"`
-		NextPay               string `json:"nextPay"`
-		NextPayDate           string `json:"nextPayDate"`
-		PayPeriod             string `json:"payPeriod"`
-		RedeemAmountEarly     string `json:"redeemAmountEarly"`
-		RewardsEndDate        string `json:"rewardsEndDate"`
-		DeliverDate           string `json:"deliverDate"`
-		RedeemPeriod          string `json:"redeemPeriod"`
-		RedeemingAmt          string `json:"redeemingAmt"`
-		PartialAmtDeliverDate string `json:"partialAmtDeliverDate"`
-		CanRedeemEarly        bool   `json:"canRedeemEarly"`
-		CanFastRedemption     bool   `json:"canFastRedemption"`
-		AutoSubscribe         bool   `json:"autoSubscribe"`
-		Type                  string `json:"type"`
-		Status                string `json:"status"`
-		CanReStake            bool   `json:"canReStake"`
-		ReStakeInfo           struct {
-			ReStakeRate           string `json:"reStakeRate"`
-			ReStakeAmount         string `json:"reStakeAmount"`
-			ReStakeDuration       string `json:"reStakeDuration"`
-			ReStakeApr            string `json:"reStakeApr"`
-			EstRewards            string `json:"estRewards"`
-			ReStakeRewardsEndDate string `json:"reStakeRewardsEndDate"`
-			ReStakeDeliverDate    string `json:"reStakeDeliverDate"`
-		} `json:"reStakeInfo"`
-	} `json:"rows"`
 	Total int `json:"total"`
+	Rows  []struct {
+		PositionID        int    `json:"positionId"`
+		ProjectID         string `json:"projectId"`
+		Asset             string `json:"asset"`
+		Amount            string `json:"amount"`
+		PurchaseTime      int64  `json:"purchaseTime"`
+		Duration          int    `json:"duration"`
+		AccrualDays       int    `json:"accrualDays"`
+		RewardAsset       string `json:"rewardAsset"`
+		RewardAmt         string `json:"rewardAmt"`
+		NextPay           string `json:"nextPay"`
+		NextPayDate       int64  `json:"nextPayDate"`
+		PayPeriod         int    `json:"payPeriod"`
+		RedeemAmountEarly string `json:"redeemAmountEarly"`
+		RewardsEndDate    int64  `json:"rewardsEndDate"`
+		DeliverDate       int64  `json:"deliverDate"`
+		RedeemPeriod      int    `json:"redeemPeriod"`
+		CanRedeemEarly    bool   `json:"canRedeemEarly"`
+		AutoSubscribe     bool   `json:"autoSubscribe"`
+		Type              string `json:"type"`
+		Status            string `json:"status"`
+		CanReStake        bool   `json:"canReStake"`
+		Apy               string `json:"apy"`
+	} `json:"rows"`
 }
