@@ -384,6 +384,11 @@ func (c *Client) NewExchangeInfoService() *ExchangeInfoService {
 	return &ExchangeInfoService{c: c}
 }
 
+// NewDepthService init price depth service
+func (c *Client) NewDepthService() *DepthService {
+	return &DepthService{c: c}
+}
+
 // NewCreateOrderService init creating order service
 func (c *Client) NewCreateOrderService() *CreateOrderService {
 	return &CreateOrderService{c: c}
@@ -457,4 +462,9 @@ func (c *Client) NewChangePositionModeService() *ChangePositionModeService {
 // NewGetPositionModeService init get position mode service
 func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 	return &GetPositionModeService{c: c}
+}
+
+// NewListFundingRateService init listing funding rate service
+func (c *Client) NewListFundingRateService() *ListFundingRateService {
+	return &ListFundingRateService{c: c}
 }
