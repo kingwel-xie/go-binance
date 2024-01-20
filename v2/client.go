@@ -1062,3 +1062,18 @@ func (c *Client) NewGetSimpleEarnFlexiblePositionService() *GetSimpleEarnFlexibl
 func (c *Client) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
 	return &GetSimpleEarnLockedPositionService{c: c}
 }
+
+// NewListLoanableCoinService returns crypto-loan list locked loanable data service
+func (c *Client) NewListLoanableCoinService() *ListLoanableCoinService {
+	return &ListLoanableCoinService{c: c}
+}
+
+// NewListCollateralCoinService returns crypto-loan list locked collateral data service
+func (c *Client) NewListCollateralCoinService() *ListCollateralCoinService {
+	return &ListCollateralCoinService{c: c}
+}
+
+// NewLoanBorrowLockedService returns crypto-loan locked borrow service
+func (c *Client) NewLoanBorrowLockedService() *LoanBorrowLockedService {
+	return &LoanBorrowLockedService{c: c}
+}
