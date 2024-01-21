@@ -12,7 +12,7 @@ type ListLoanableCoinService struct {
 	vipLevel *int32
 }
 
-// LoanCoin sets the asset parameter.
+// LoanCoin sets the loanCoin parameter.
 func (s *ListLoanableCoinService) LoanCoin(coin string) *ListLoanableCoinService {
 	if len(coin) > 0 {
 		s.loanCoin = &coin
@@ -199,34 +199,34 @@ type LoanBorrowLockedResponse struct {
 	OrderID            string `json:"orderId"`
 }
 
-// LoanRedeemLockedService redeem locked product.
-type LoanRedeemLockedService struct {
-	c          *Client
-	orderId    int64
-	amount     float64
-	redeemType int
+// LoanRepayLockedService repay locked product.
+type LoanRepayLockedService struct {
+	c         *Client
+	orderId   int64
+	amount    float64
+	repayType int
 }
 
 // OrderId sets the orderId parameter (MANDATORY).
-func (s *LoanRedeemLockedService) OrderId(orderId int64) *LoanRedeemLockedService {
+func (s *LoanRepayLockedService) OrderId(orderId int64) *LoanRepayLockedService {
 	s.orderId = orderId
 	return s
 }
 
 // Amount sets the amount parameter (MANDATORY).
-func (s *LoanRedeemLockedService) Amount(amount float64) *LoanRedeemLockedService {
+func (s *LoanRepayLockedService) Amount(amount float64) *LoanRepayLockedService {
 	s.amount = amount
 	return s
 }
 
-// Type sets the redeemType parameter (MANDATORY).
-func (s *LoanRedeemLockedService) Type(redeemType int) *LoanRedeemLockedService {
-	s.redeemType = redeemType
+// Type sets the repayType parameter (MANDATORY).
+func (s *LoanRepayLockedService) Type(repayType int) *LoanRepayLockedService {
+	s.repayType = repayType
 	return s
 }
 
 // Do sends the request.
-func (s *LoanRedeemLockedService) Do(ctx context.Context) (res *LoanRedeemLockedResponse, err error) {
+func (s *LoanRepayLockedService) Do(ctx context.Context) (res *LoanRepayLockedResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: "/sapi/v1/loan/repay",
@@ -234,13 +234,13 @@ func (s *LoanRedeemLockedService) Do(ctx context.Context) (res *LoanRedeemLocked
 	}
 	r.setParam("orderId", s.orderId)
 	r.setParam("amount", s.amount)
-	r.setParam("type", s.redeemType)
+	r.setParam("type", s.repayType)
 
 	data, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
-	res = new(LoanRedeemLockedResponse)
+	res = new(LoanRepayLockedResponse)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		return
@@ -248,8 +248,8 @@ func (s *LoanRedeemLockedService) Do(ctx context.Context) (res *LoanRedeemLocked
 	return res, nil
 }
 
-// LoanRedeemLockedResponse represents a response from redeem locked loan.
-type LoanRedeemLockedResponse struct {
+// LoanRepayLockedResponse represents a response from repay locked loan.
+type LoanRepayLockedResponse struct {
 	LoanCoin            string `json:"loanCoin"`
 	RemainingPrincipal  string `json:"remainingPrincipal"`
 	RemainingInterest   string `json:"remainingInterest"`

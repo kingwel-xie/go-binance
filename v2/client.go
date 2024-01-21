@@ -1077,3 +1077,53 @@ func (c *Client) NewListCollateralCoinService() *ListCollateralCoinService {
 func (c *Client) NewLoanBorrowLockedService() *LoanBorrowLockedService {
 	return &LoanBorrowLockedService{c: c}
 }
+
+// NewLoanRepayLockedService returns crypto-loan locked repay service
+func (c *Client) NewLoanRepayLockedService() *LoanRepayLockedService {
+	return &LoanRepayLockedService{c: c}
+}
+
+// NewListLoanableCoinFlexibleService returns crypto-loan list flexible loanable data service
+func (c *Client) NewListLoanableCoinFlexibleService() *ListLoanableCoinFlexibleService {
+	return &ListLoanableCoinFlexibleService{c: c}
+}
+
+// NewListCollateralCoinFlexibleService returns crypto-loan list flexible collateral data service
+func (c *Client) NewListCollateralCoinFlexibleService() *ListCollateralCoinFlexibleService {
+	return &ListCollateralCoinFlexibleService{c: c}
+}
+
+// NewLoanBorrowFlexibleService returns crypto-loan flexible borrow service
+func (c *Client) NewLoanBorrowFlexibleService() *LoanBorrowFlexibleService {
+	return &LoanBorrowFlexibleService{c: c}
+}
+
+// NewLoanRepayFlexibleService returns crypto-loan flexible repay service
+func (c *Client) NewLoanRepayFlexibleService() *LoanRepayFlexibleService {
+	return &LoanRepayFlexibleService{c: c}
+}
+
+// NewEthStakingAccountService returns eth-stake account service
+func (c *Client) NewEthStakingAccountService() *EthStakingAccountService {
+	return &EthStakingAccountService{c: c}
+}
+
+// NewEthStakingHistoryService returns eth-stake history service
+func (c *Client) NewEthStakingHistoryService() *EthStakingHistoryService {
+	return &EthStakingHistoryService{c: c}
+}
+
+// NewEthStakingService returns eth-stake staking service
+func (c *Client) NewEthStakingService() *EthStakingService {
+	return &EthStakingService{c: c}
+}
+
+// NewEthWrappingService returns eth-stake wrapping service
+func (c *Client) NewEthWrappingService() *EthWrappingService {
+	return &EthWrappingService{c: c}
+}
+
+// NewEthRedeemService returns eth-stake redeem service
+func (c *Client) NewEthRedeemService() *EthRedeemService {
+	return &EthRedeemService{c: c}
+}

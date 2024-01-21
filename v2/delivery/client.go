@@ -468,3 +468,8 @@ func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 func (c *Client) NewListFundingRateService() *ListFundingRateService {
 	return &ListFundingRateService{c: c}
 }
+
+// NewGetPremiumIndexService init getting premium index service
+func (c *Client) NewGetPremiumIndexService() *GetPremiumIndexService {
+	return &GetPremiumIndexService{c: c}
+}
