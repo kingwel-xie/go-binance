@@ -91,12 +91,12 @@ type AccountAsset struct {
 	CrossWalletBalance     string `json:"crossWalletBalance"`
 	CrossUnPnl             string `json:"crossUnPnl"`
 	AvailableBalance       string `json:"availableBalance"`
+	UpdateTime             int64  `json:"updateTime"`
 }
 
 // AccountPosition define accoutn position
 type AccountPosition struct {
 	Symbol                 string `json:"symbol"`
-	PositionAmt            string `json:"positionAmt"`
 	InitialMargin          string `json:"initialMargin"`
 	MaintMargin            string `json:"maintMargin"`
 	UnrealizedProfit       string `json:"unrealizedProfit"`
@@ -107,4 +107,9 @@ type AccountPosition struct {
 	PositionSide           string `json:"positionSide"`
 	EntryPrice             string `json:"entryPrice"`
 	MaxQty                 string `json:"maxQty"`
+	NotionalValue          string `json:"notionalValue"`
+	IsolatedWallet         string `json:"isolatedWallet"`
+	PositionAmt            string `json:"positionAmt"`
+	BreakEvenPrice         string `json:"breakEvenPrice"`
+	UpdateTime             int64  `json:"updateTime"`
 }
