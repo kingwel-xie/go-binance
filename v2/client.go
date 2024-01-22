@@ -1127,3 +1127,8 @@ func (c *Client) NewEthWrappingService() *EthWrappingService {
 func (c *Client) NewEthRedeemService() *EthRedeemService {
 	return &EthRedeemService{c: c}
 }
+
+// NewGetFundingAssetService returns wallet get funding asset service
+func (c *Client) NewGetFundingAssetService() *GetFundingAssetService {
+	return &GetFundingAssetService{c: c}
+}
