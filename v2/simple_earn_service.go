@@ -5,6 +5,41 @@ import (
 	"net/http"
 )
 
+// SimpleEarnAccountService gets simple-earn account info.
+type SimpleEarnAccountService struct {
+	c *Client
+}
+
+// Do sends the request.
+func (s *SimpleEarnAccountService) Do(ctx context.Context) (res *SimpleEarnAccountResponse, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/simple-earn/account",
+		secType:  secTypeSigned,
+	}
+
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return
+	}
+	res = new(SimpleEarnAccountResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return
+	}
+	return res, nil
+}
+
+// SimpleEarnAccountResponse represents a simple-earn account response.
+type SimpleEarnAccountResponse struct {
+	TotalAmountInBTC          string `json:"totalAmountInBTC"`
+	TotalAmountInUSDT         string `json:"totalAmountInUSDT"`
+	TotalFlexibleAmountInBTC  string `json:"totalFlexibleAmountInBTC"`
+	TotalFlexibleAmountInUSDT string `json:"totalFlexibleAmountInUSDT"`
+	TotalLockedInBTC          string `json:"totalLockedInBTC"`
+	TotalLockedInUSDT         string `json:"totalLockedInUSDT"`
+}
+
 // ListSimpleEarnFlexibleService list simple-earn flexible products.
 type ListSimpleEarnFlexibleService struct {
 	c       *Client

@@ -1023,6 +1023,11 @@ func (c *Client) NewSubAccountFuturesSummaryV1Service() *SubAccountFuturesSummar
 	return &SubAccountFuturesSummaryV1Service{c: c}
 }
 
+// NewSimpleEarnAccountService init simple-earn account service
+func (c *Client) NewSimpleEarnAccountService() *SimpleEarnAccountService {
+	return &SimpleEarnAccountService{c: c}
+}
+
 // NewListSimpleEarnFlexibleService init listing simple-earn flexible service
 func (c *Client) NewListSimpleEarnFlexibleService() *ListSimpleEarnFlexibleService {
 	return &ListSimpleEarnFlexibleService{c: c}
