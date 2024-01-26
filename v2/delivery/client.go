@@ -473,3 +473,8 @@ func (c *Client) NewListFundingRateService() *ListFundingRateService {
 func (c *Client) NewGetPremiumIndexService() *GetPremiumIndexService {
 	return &GetPremiumIndexService{c: c}
 }
+
+// NewGetLeverageBracketService init getting leverage bracket service
+func (c *Client) NewGetLeverageBracketService() *GetLeverageBracketService {
+	return &GetLeverageBracketService{c: c}
+}
