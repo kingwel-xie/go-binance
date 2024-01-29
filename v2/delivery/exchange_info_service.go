@@ -75,6 +75,8 @@ type Symbol struct {
 	TriggerProtect        string                   `json:"triggerProtect"`
 	UnderlyingType        string                   `json:"underlyingType"`
 	UnderlyingSubType     []interface{}            `json:"underlyingSubType"`
+	LiquidationFee        string                   `json:"liquidationFee"`
+	MarketTakeBound       string                   `json:"marketTakeBound"`
 }
 
 // LotSizeFilter define lot size filter of symbol
