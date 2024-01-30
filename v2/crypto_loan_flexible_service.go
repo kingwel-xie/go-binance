@@ -218,3 +218,61 @@ type LoanRepayFlexibleResponse struct {
 	CurrentLTV          string `json:"currentLTV"`
 	RepayStatus         string `json:"repayStatus"`
 }
+
+// ListLoanFlexibleService list flexible loan debt data.
+type ListLoanFlexibleService struct {
+	c        *Client
+	loanCoin *string
+	limit    *int
+}
+
+// LoanCoin sets the loan coin parameter.
+func (s *ListLoanFlexibleService) LoanCoin(coin string) *ListLoanFlexibleService {
+	if len(coin) > 0 {
+		s.loanCoin = &coin
+	}
+	return s
+}
+
+// Limit set limit
+func (s *ListLoanFlexibleService) Limit(limit int) *ListLoanFlexibleService {
+	s.limit = &limit
+	return s
+}
+
+// Do sends the request.
+func (s *ListLoanFlexibleService) Do(ctx context.Context) (res *LoanOrderFlexibleList, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/loan/flexible/ongoing/orders",
+		secType:  secTypeSigned,
+	}
+	if s.loanCoin != nil {
+		r.setParam("loanCoin", *s.loanCoin)
+	}
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return
+	}
+	res = new(LoanOrderFlexibleList)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return
+	}
+	return res, nil
+}
+
+// LoanOrderFlexibleList represents a list of flexible loan orders.
+type LoanOrderFlexibleList struct {
+	Rows []struct {
+		LoanCoin         string `json:"loanCoin"`
+		TotalDebt        string `json:"totalDebt"`
+		CollateralCoin   string `json:"collateralCoin"`
+		CollateralAmount string `json:"collateralAmount"`
+		CurrentLTV       string `json:"currentLTV"`
+	} `json:"rows"`
+	Total int `json:"total"`
+}

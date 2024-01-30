@@ -1137,3 +1137,13 @@ func (c *Client) NewEthRedeemService() *EthRedeemService {
 func (c *Client) NewGetFundingAssetService() *GetFundingAssetService {
 	return &GetFundingAssetService{c: c}
 }
+
+// NewListLoanFlexibleService returns list crypto loan flexible order service
+func (c *Client) NewListLoanFlexibleService() *ListLoanFlexibleService {
+	return &ListLoanFlexibleService{c: c}
+}
+
+// NewListLoanLockedService returns list crypto loan locked order service
+func (c *Client) NewListLoanLockedService() *ListLoanLockedService {
+	return &ListLoanLockedService{c: c}
+}
