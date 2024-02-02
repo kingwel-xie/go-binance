@@ -276,3 +276,68 @@ type LoanOrderFlexibleList struct {
 	} `json:"rows"`
 	Total int `json:"total"`
 }
+
+// AdjustLtvLoanFlexibleService adjust flexible loan LTV.
+type AdjustLtvLoanFlexibleService struct {
+	c                *Client
+	loanCoin         string
+	collateralCoin   string
+	adjustmentAmount float64
+	direction        string
+}
+
+// LoanCoin sets the loan coin parameter.
+func (s *AdjustLtvLoanFlexibleService) LoanCoin(coin string) *AdjustLtvLoanFlexibleService {
+	s.loanCoin = coin
+	return s
+}
+
+// CollateralCoin set collateral coin parameter.
+func (s *AdjustLtvLoanFlexibleService) CollateralCoin(collateralCoin string) *AdjustLtvLoanFlexibleService {
+	s.collateralCoin = collateralCoin
+	return s
+}
+
+// AdjustmentAmount set collateral adjustment amount parameter.
+func (s *AdjustLtvLoanFlexibleService) AdjustmentAmount(adjustmentAmount float64) *AdjustLtvLoanFlexibleService {
+	s.adjustmentAmount = adjustmentAmount
+	return s
+}
+
+// Direction set direction parameter, "ADDITIONAL", "REDUCED".
+func (s *AdjustLtvLoanFlexibleService) Direction(direction string) *AdjustLtvLoanFlexibleService {
+	s.direction = direction
+	return s
+}
+
+// Do sends the request.
+func (s *AdjustLtvLoanFlexibleService) Do(ctx context.Context) (res *AdjustLtvLoanFlexibleResponse, err error) {
+	r := &request{
+		method:   http.MethodPost,
+		endpoint: "/sapi/v1/loan/flexible/adjust/ltv",
+		secType:  secTypeSigned,
+	}
+	r.setParam("loanCoin", s.loanCoin)
+	r.setParam("collateralCoin", s.collateralCoin)
+	r.setParam("adjustmentAmount", s.adjustmentAmount)
+	r.setParam("direction", s.direction)
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return
+	}
+	res = new(AdjustLtvLoanFlexibleResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return
+	}
+	return res, nil
+}
+
+// AdjustLtvLoanFlexibleResponse represents a response of adjust LTV of flexible loan.
+type AdjustLtvLoanFlexibleResponse struct {
+	LoanCoin         string `json:"loanCoin"`
+	CollateralCoin   string `json:"collateralCoin"`
+	Direction        string `json:"direction"`
+	AdjustmentAmount string `json:"adjustmentAmount"`
+	CurrentLTV       string `json:"currentLTV"`
+}

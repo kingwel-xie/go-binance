@@ -1143,6 +1143,11 @@ func (c *Client) NewListLoanFlexibleService() *ListLoanFlexibleService {
 	return &ListLoanFlexibleService{c: c}
 }
 
+// NewAdjustLtvLoanFlexibleService returns adjust crypto loan flexible LTV service
+func (c *Client) NewAdjustLtvLoanFlexibleService() *AdjustLtvLoanFlexibleService {
+	return &AdjustLtvLoanFlexibleService{c: c}
+}
+
 // NewListLoanLockedService returns list crypto loan locked order service
 func (c *Client) NewListLoanLockedService() *ListLoanLockedService {
 	return &ListLoanLockedService{c: c}
