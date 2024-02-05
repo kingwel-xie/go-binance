@@ -74,6 +74,7 @@ type Account struct {
 	CanWithdraw                 bool               `json:"canWithdraw"`
 	UpdateTime                  int64              `json:"updateTime"`
 	MultiAssetsMargin           bool               `json:"multiAssetsMargin"`
+	TradeGroupId                int                `json:"tradeGroupId"`
 	TotalInitialMargin          string             `json:"totalInitialMargin"`
 	TotalMaintMargin            string             `json:"totalMaintMargin"`
 	TotalWalletBalance          string             `json:"totalWalletBalance"`
