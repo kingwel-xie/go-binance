@@ -1113,9 +1113,19 @@ func (c *Client) NewEthStakingAccountService() *EthStakingAccountService {
 	return &EthStakingAccountService{c: c}
 }
 
-// NewEthStakingHistoryService returns eth-stake history service
+// NewEthStakingHistoryService returns eth-stake staking history service
 func (c *Client) NewEthStakingHistoryService() *EthStakingHistoryService {
 	return &EthStakingHistoryService{c: c}
+}
+
+// NewEthStakingRedemptionHistoryService returns eth-stake redemption history service
+func (c *Client) NewEthStakingRedemptionHistoryService() *EthStakingRedemptionHistoryService {
+	return &EthStakingRedemptionHistoryService{c: c}
+}
+
+// NewEthStakingRewardsHistoryService returns eth-stake rewards history service
+func (c *Client) NewEthStakingRewardsHistoryService() *EthStakingRewardsHistoryService {
+	return &EthStakingRewardsHistoryService{c: c}
 }
 
 // NewEthStakingService returns eth-stake staking service

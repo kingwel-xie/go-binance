@@ -120,6 +120,162 @@ type EthStakingHistoryResponse struct {
 	Total int `json:"total"`
 }
 
+// EthStakingRewardsHistoryService fetches the staking history
+type EthStakingRewardsHistoryService struct {
+	c         *Client
+	startTime *int64
+	endTime   *int64
+	current   *int32
+	size      *int32
+}
+
+// StartTime sets the startTime parameter.
+func (s *EthStakingRewardsHistoryService) StartTime(startTime int64) *EthStakingRewardsHistoryService {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime sets the endTime parameter.
+func (s *EthStakingRewardsHistoryService) EndTime(endTime int64) *EthStakingRewardsHistoryService {
+	s.endTime = &endTime
+	return s
+}
+
+// Current sets the current parameter.
+func (s *EthStakingRewardsHistoryService) Current(current int32) *EthStakingRewardsHistoryService {
+	s.current = &current
+	return s
+}
+
+// Size sets the size parameter.
+func (s *EthStakingRewardsHistoryService) Size(size int32) *EthStakingRewardsHistoryService {
+	s.size = &size
+	return s
+}
+
+// Do sends the request.
+func (s *EthStakingRewardsHistoryService) Do(ctx context.Context) (*EthStakingRewardsHistoryResponse, error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/eth-staking/eth/history/wbethRewardsHistory",
+		secType:  secTypeSigned,
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.current != nil {
+		r.setParam("current", *s.current)
+	}
+	if s.size != nil {
+		r.setParam("size", *s.size)
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	res := new(EthStakingRewardsHistoryResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// EthStakingRewardsHistoryResponse represents the ETH staking WBETH rewards history.
+type EthStakingRewardsHistoryResponse struct {
+	Total           int    `json:"total"`
+	EstRewardsInETH string `json:"estRewardsInETH"`
+	Rows            []struct {
+		Time                 int64  `json:"time"`
+		AmountInETH          string `json:"amountInETH"`
+		Holding              string `json:"holding"`
+		HoldingInETH         string `json:"holdingInETH"`
+		AnnualPercentageRate string `json:"annualPercentageRate"`
+	} `json:"rows"`
+}
+
+// EthStakingRedemptionHistoryService fetches the staking history
+type EthStakingRedemptionHistoryService struct {
+	c         *Client
+	startTime *int64
+	endTime   *int64
+	current   *int32
+	size      *int32
+}
+
+// StartTime sets the startTime parameter.
+func (s *EthStakingRedemptionHistoryService) StartTime(startTime int64) *EthStakingRedemptionHistoryService {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime sets the endTime parameter.
+func (s *EthStakingRedemptionHistoryService) EndTime(endTime int64) *EthStakingRedemptionHistoryService {
+	s.endTime = &endTime
+	return s
+}
+
+// Current sets the current parameter.
+func (s *EthStakingRedemptionHistoryService) Current(current int32) *EthStakingRedemptionHistoryService {
+	s.current = &current
+	return s
+}
+
+// Size sets the size parameter.
+func (s *EthStakingRedemptionHistoryService) Size(size int32) *EthStakingRedemptionHistoryService {
+	s.size = &size
+	return s
+}
+
+// Do sends the request.
+func (s *EthStakingRedemptionHistoryService) Do(ctx context.Context) (*EthStakingRedemptionHistoryResponse, error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/eth-staking/eth/history/redemptionHistory",
+		secType:  secTypeSigned,
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.current != nil {
+		r.setParam("current", *s.current)
+	}
+	if s.size != nil {
+		r.setParam("size", *s.size)
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	res := new(EthStakingRedemptionHistoryResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// EthStakingRedemptionHistoryResponse represents the ETH redemption history.
+type EthStakingRedemptionHistoryResponse struct {
+	Total int `json:"total"`
+	Rows  []struct {
+		Time             int64  `json:"time"`
+		ArrivalTime      int64  `json:"arrivalTime"`
+		Asset            string `json:"asset"`
+		Amount           string `json:"amount"`
+		Status           string `json:"status"`
+		DistributeAsset  string `json:"distributeAsset"`
+		DistributeAmount string `json:"distributeAmount"`
+		ConversionRatio  string `json:"conversionRatio"`
+	} `json:"rows"`
+}
+
 // EthStakingService stake ETH.
 type EthStakingService struct {
 	c      *Client
