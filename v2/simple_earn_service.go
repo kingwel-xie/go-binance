@@ -400,13 +400,13 @@ func (s *GetSimpleEarnFlexiblePositionService) Asset(asset string) *GetSimpleEar
 	return s
 }
 
-// Asset sets the asset parameter.
+// Current sets the current parameter.
 func (s *GetSimpleEarnFlexiblePositionService) Current(current int32) *GetSimpleEarnFlexiblePositionService {
 	s.current = &current
 	return s
 }
 
-// Asset sets the asset parameter.
+// Size sets the size parameter.
 func (s *GetSimpleEarnFlexiblePositionService) Size(size int32) *GetSimpleEarnFlexiblePositionService {
 	s.size = &size
 	return s
@@ -542,5 +542,67 @@ type GetSimpleEarnLockedPositionResponse struct {
 		Status            string `json:"status"`
 		CanReStake        bool   `json:"canReStake"`
 		Apy               string `json:"apy"`
+	} `json:"rows"`
+}
+
+// ListSimpleEarnFlexibleRateHistoryService list simple-earn locked products.
+type ListSimpleEarnFlexibleRateHistoryService struct {
+	c         *Client
+	productId string
+	current   *int32
+	size      *int32
+}
+
+// ProductId sets the productId parameter.
+func (s *ListSimpleEarnFlexibleRateHistoryService) ProductId(productId string) *ListSimpleEarnFlexibleRateHistoryService {
+	s.productId = productId
+	return s
+}
+
+// Current sets the current parameter.
+func (s *ListSimpleEarnFlexibleRateHistoryService) Current(current int32) *ListSimpleEarnFlexibleRateHistoryService {
+	s.current = &current
+	return s
+}
+
+// Size sets the size parameter.
+func (s *ListSimpleEarnFlexibleRateHistoryService) Size(size int32) *ListSimpleEarnFlexibleRateHistoryService {
+	s.size = &size
+	return s
+}
+
+// Do sends the request.
+func (s *ListSimpleEarnFlexibleRateHistoryService) Do(ctx context.Context) (res *ListSimpleEarnFlexibleRateHistoryResponse, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/simple-earn/flexible/history/rateHistory",
+		secType:  secTypeSigned,
+	}
+	r.setParam("productId", s.productId)
+	if s.current != nil {
+		r.setParam("current", *s.current)
+	}
+	if s.size != nil {
+		r.setParam("size", *s.size)
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return
+	}
+	res = new(ListSimpleEarnFlexibleRateHistoryResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return
+	}
+	return res, nil
+}
+
+type ListSimpleEarnFlexibleRateHistoryResponse struct {
+	Total int `json:"total"`
+	Rows  []struct {
+		Asset                string `json:"asset"`
+		AnnualPercentageRate string `json:"annualPercentageRate"`
+		ProductID            string `json:"productId"`
+		Time                 int64  `json:"time"`
 	} `json:"rows"`
 }

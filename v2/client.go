@@ -1063,6 +1063,11 @@ func (c *Client) NewGetSimpleEarnFlexiblePositionService() *GetSimpleEarnFlexibl
 	return &GetSimpleEarnFlexiblePositionService{c: c}
 }
 
+// NewListSimpleEarnFlexibleRateHistoryService returns simple-earn listing flexible rate history
+func (c *Client) NewListSimpleEarnFlexibleRateHistoryService() *ListSimpleEarnFlexibleRateHistoryService {
+	return &ListSimpleEarnFlexibleRateHistoryService{c: c}
+}
+
 // NewGetSimpleEarnLockedPositionService returns simple-earn locked position service
 func (c *Client) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
 	return &GetSimpleEarnLockedPositionService{c: c}
