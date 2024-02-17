@@ -125,6 +125,40 @@ type FundingRate struct {
 	Time        int64  `json:"time"`
 }
 
+// ListFundingInfoService list funding rate info
+type ListFundingInfoService struct {
+	c *Client
+}
+
+// Do send request
+func (s *ListFundingInfoService) Do(ctx context.Context, opts ...RequestOption) (res []*FundingInfo, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/fapi/v1/fundingInfo",
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	res = make([]*FundingInfo, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// FundingInfo define funding rate entry info
+type FundingInfo struct {
+	Symbol                   string `json:"symbol"`
+	AdjustedFundingRateCap   string `json:"adjustedFundingRateCap"`
+	AdjustedFundingRateFloor string `json:"adjustedFundingRateFloor"`
+	FundingIntervalHours     int    `json:"fundingIntervalHours"`
+	Disclaimer               bool   `json:"disclaimer"`
+}
+
 // GetLeverageBracketService get funding rate
 type GetLeverageBracketService struct {
 	c      *Client

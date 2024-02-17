@@ -469,6 +469,11 @@ func (c *Client) NewListFundingRateService() *ListFundingRateService {
 	return &ListFundingRateService{c: c}
 }
 
+// NewListFundingInfoService init listing funding info service
+func (c *Client) NewListFundingInfoService() *ListFundingInfoService {
+	return &ListFundingInfoService{c: c}
+}
+
 // NewGetPremiumIndexService init getting premium index service
 func (c *Client) NewGetPremiumIndexService() *GetPremiumIndexService {
 	return &GetPremiumIndexService{c: c}
