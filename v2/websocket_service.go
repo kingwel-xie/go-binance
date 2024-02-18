@@ -504,6 +504,8 @@ type WsBalanceUpdate struct {
 }
 
 type WsOrderUpdate struct {
+	EventType               string          `json:"e"`
+	UpdateTime              int64           `json:"E"`
 	Symbol                  string          `json:"s"`
 	ClientOrderId           string          `json:"c"`
 	Side                    string          `json:"S"`
