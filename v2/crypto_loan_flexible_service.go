@@ -106,7 +106,7 @@ type LoanBorrowFlexibleService struct {
 	c                *Client
 	loanCoin         string
 	collateralCoin   string
-	collateralAmount float64
+	collateralAmount string
 }
 
 // LoanCoin sets the loan coin parameter (MANDATORY).
@@ -122,7 +122,7 @@ func (s *LoanBorrowFlexibleService) CollateralCoin(collateralCoin string) *LoanB
 }
 
 // CollateralAmount sets the CollateralAmount parameter (MANDATORY).
-func (s *LoanBorrowFlexibleService) CollateralAmount(v float64) *LoanBorrowFlexibleService {
+func (s *LoanBorrowFlexibleService) CollateralAmount(v string) *LoanBorrowFlexibleService {
 	s.collateralAmount = v
 	return s
 }
@@ -164,7 +164,7 @@ type LoanRepayFlexibleService struct {
 	c              *Client
 	loanCoin       string
 	collateralCoin string
-	repayAmount    float64
+	repayAmount    string
 }
 
 // LoanCoin sets the loanCoin parameter (MANDATORY).
@@ -180,7 +180,7 @@ func (s *LoanRepayFlexibleService) CollateralCoin(collateralCoin string) *LoanRe
 }
 
 // RepayAmount sets the repayAmount parameter (MANDATORY).
-func (s *LoanRepayFlexibleService) RepayAmount(repayAmount float64) *LoanRepayFlexibleService {
+func (s *LoanRepayFlexibleService) RepayAmount(repayAmount string) *LoanRepayFlexibleService {
 	s.repayAmount = repayAmount
 	return s
 }
@@ -282,7 +282,7 @@ type AdjustLtvLoanFlexibleService struct {
 	c                *Client
 	loanCoin         string
 	collateralCoin   string
-	adjustmentAmount float64
+	adjustmentAmount string
 	direction        string
 }
 
@@ -299,7 +299,7 @@ func (s *AdjustLtvLoanFlexibleService) CollateralCoin(collateralCoin string) *Ad
 }
 
 // AdjustmentAmount set collateral adjustment amount parameter.
-func (s *AdjustLtvLoanFlexibleService) AdjustmentAmount(adjustmentAmount float64) *AdjustLtvLoanFlexibleService {
+func (s *AdjustLtvLoanFlexibleService) AdjustmentAmount(adjustmentAmount string) *AdjustLtvLoanFlexibleService {
 	s.adjustmentAmount = adjustmentAmount
 	return s
 }

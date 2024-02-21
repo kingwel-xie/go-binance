@@ -279,11 +279,11 @@ type EthStakingRedemptionHistoryResponse struct {
 // EthStakingService stake ETH.
 type EthStakingService struct {
 	c      *Client
-	amount float64
+	amount string
 }
 
 // Amount sets the amount parameter (MANDATORY).
-func (s *EthStakingService) Amount(amount float64) *EthStakingService {
+func (s *EthStakingService) Amount(amount string) *EthStakingService {
 	s.amount = amount
 	return s
 }
@@ -319,11 +319,11 @@ type EthStakingResponse struct {
 // EthWrappingService stake ETH.
 type EthWrappingService struct {
 	c      *Client
-	amount float64
+	amount string
 }
 
 // Amount sets the amount parameter (MANDATORY).
-func (s *EthWrappingService) Amount(amount float64) *EthWrappingService {
+func (s *EthWrappingService) Amount(amount string) *EthWrappingService {
 	s.amount = amount
 	return s
 }
@@ -360,7 +360,7 @@ type EthWrappingResponse struct {
 type EthRedeemService struct {
 	c      *Client
 	asset  string
-	amount float64
+	amount string
 }
 
 // Asset sets the asset parameter (MANDATORY).
@@ -370,7 +370,7 @@ func (s *EthRedeemService) Asset(asset string) *EthRedeemService {
 }
 
 // Amount sets the amount parameter (MANDATORY).
-func (s *EthRedeemService) Amount(amount float64) *EthRedeemService {
+func (s *EthRedeemService) Amount(amount string) *EthRedeemService {
 	s.amount = amount
 	return s
 }

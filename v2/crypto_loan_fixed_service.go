@@ -137,7 +137,7 @@ type LoanBorrowLockedService struct {
 	c                *Client
 	loanCoin         string
 	collateralCoin   string
-	collateralAmount float64
+	collateralAmount string
 	loanTerm         int
 }
 
@@ -154,7 +154,7 @@ func (s *LoanBorrowLockedService) CollateralCoin(collateralCoin string) *LoanBor
 }
 
 // CollateralAmount sets the CollateralAmount parameter (MANDATORY).
-func (s *LoanBorrowLockedService) CollateralAmount(v float64) *LoanBorrowLockedService {
+func (s *LoanBorrowLockedService) CollateralAmount(v string) *LoanBorrowLockedService {
 	s.collateralAmount = v
 	return s
 }
@@ -203,7 +203,7 @@ type LoanBorrowLockedResponse struct {
 type LoanRepayLockedService struct {
 	c         *Client
 	orderId   int64
-	amount    float64
+	amount    string
 	repayType int
 }
 
@@ -214,7 +214,7 @@ func (s *LoanRepayLockedService) OrderId(orderId int64) *LoanRepayLockedService 
 }
 
 // Amount sets the amount parameter (MANDATORY).
-func (s *LoanRepayLockedService) Amount(amount float64) *LoanRepayLockedService {
+func (s *LoanRepayLockedService) Amount(amount string) *LoanRepayLockedService {
 	s.amount = amount
 	return s
 }

@@ -199,7 +199,7 @@ type SimpleEarnLockedList struct {
 type SubscribeSimpleEarnFlexibleService struct {
 	c         *Client
 	productId string
-	amount    float64
+	amount    string
 }
 
 // Asset sets the asset parameter.
@@ -209,7 +209,7 @@ func (s *SubscribeSimpleEarnFlexibleService) ProductId(productId string) *Subscr
 }
 
 // Amount sets the Amount parameter (MANDATORY).
-func (s *SubscribeSimpleEarnFlexibleService) Amount(v float64) *SubscribeSimpleEarnFlexibleService {
+func (s *SubscribeSimpleEarnFlexibleService) Amount(v string) *SubscribeSimpleEarnFlexibleService {
 	s.amount = v
 	return s
 }
@@ -247,7 +247,7 @@ type SubscribeSimpleEarnFlexibleResponse struct {
 type SubscribeSimpleEarnLockedService struct {
 	c         *Client
 	projectId string
-	amount    float64
+	amount    string
 }
 
 // Asset sets the asset parameter.
@@ -257,7 +257,7 @@ func (s *SubscribeSimpleEarnLockedService) ProjectId(projectId string) *Subscrib
 }
 
 // Amount sets the Amount parameter (MANDATORY).
-func (s *SubscribeSimpleEarnLockedService) Amount(v float64) *SubscribeSimpleEarnLockedService {
+func (s *SubscribeSimpleEarnLockedService) Amount(v string) *SubscribeSimpleEarnLockedService {
 	s.amount = v
 	return s
 }
@@ -296,7 +296,7 @@ type SubscribeSimpleEarnLockedResponse struct {
 type RedeemSimpleEarnFlexibleService struct {
 	c         *Client
 	productId string
-	amount    float64
+	amount    *string
 }
 
 // ProductId sets the productId parameter.
@@ -306,7 +306,7 @@ func (s *RedeemSimpleEarnFlexibleService) ProductId(productId string) *RedeemSim
 }
 
 // Amount sets the Amount parameter (MANDATORY when redeemAll is false).
-func (s *RedeemSimpleEarnFlexibleService) Amount(v float64) *RedeemSimpleEarnFlexibleService {
+func (s *RedeemSimpleEarnFlexibleService) Amount(v *string) *RedeemSimpleEarnFlexibleService {
 	s.amount = v
 	return s
 }
@@ -319,10 +319,10 @@ func (s *RedeemSimpleEarnFlexibleService) Do(ctx context.Context) (res *RedeemSi
 		secType:  secTypeSigned,
 	}
 	r.setParam("productId", s.productId)
-	if s.amount == 0 {
+	if s.amount == nil {
 		r.setParam("redeemAll", true)
 	} else {
-		r.setParam("amount", s.amount)
+		r.setParam("amount", *s.amount)
 	}
 	r.setParam("destAccount", "SPOT")
 
