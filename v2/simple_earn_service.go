@@ -319,7 +319,7 @@ func (s *RedeemSimpleEarnFlexibleService) Do(ctx context.Context) (res *RedeemSi
 		secType:  secTypeSigned,
 	}
 	r.setParam("productId", s.productId)
-	if s.amount == nil {
+	if s.amount == nil || *s.amount == "" {
 		r.setParam("redeemAll", true)
 	} else {
 		r.setParam("amount", *s.amount)
