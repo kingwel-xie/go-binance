@@ -23,7 +23,7 @@ func (s *ListLoanableCoinFlexibleService) LoanCoin(coin string) *ListLoanableCoi
 func (s *ListLoanableCoinFlexibleService) Do(ctx context.Context) (res *LoanableCoinFlexibleList, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/sapi/v1/loan/flexible/loanable/data",
+		endpoint: "/sapi/v2/loan/flexible/loanable/data",
 		secType:  secTypeSigned,
 	}
 	if s.loanCoin != nil {
@@ -71,7 +71,7 @@ func (s *ListCollateralCoinFlexibleService) CollateralCoin(coin string) *ListCol
 func (s *ListCollateralCoinFlexibleService) Do(ctx context.Context) (res *CollateralCoinFlexibleList, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/sapi/v1/loan/flexible/collateral/data",
+		endpoint: "/sapi/v2/loan/flexible/collateral/data",
 		secType:  secTypeSigned,
 	}
 	if s.collateralCoin != nil {
@@ -131,7 +131,7 @@ func (s *LoanBorrowFlexibleService) CollateralAmount(v string) *LoanBorrowFlexib
 func (s *LoanBorrowFlexibleService) Do(ctx context.Context) (res *LoanBorrowFlexibleResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
-		endpoint: "/sapi/v1/loan/flexible/borrow",
+		endpoint: "/sapi/v2/loan/flexible/borrow",
 		secType:  secTypeSigned,
 	}
 	r.setParam("loanCoin", s.loanCoin)
@@ -189,7 +189,7 @@ func (s *LoanRepayFlexibleService) RepayAmount(repayAmount string) *LoanRepayFle
 func (s *LoanRepayFlexibleService) Do(ctx context.Context) (res *LoanRepayFlexibleResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
-		endpoint: "/sapi/v1/loan/flexible/repay",
+		endpoint: "/sapi/v2/loan/flexible/repay",
 		secType:  secTypeSigned,
 	}
 	r.setParam("loanCoin", s.loanCoin)
@@ -244,7 +244,7 @@ func (s *ListLoanFlexibleService) Limit(limit int) *ListLoanFlexibleService {
 func (s *ListLoanFlexibleService) Do(ctx context.Context) (res *LoanOrderFlexibleList, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/sapi/v1/loan/flexible/ongoing/orders",
+		endpoint: "/sapi/v2/loan/flexible/ongoing/orders",
 		secType:  secTypeSigned,
 	}
 	if s.loanCoin != nil {
@@ -314,7 +314,7 @@ func (s *AdjustLtvLoanFlexibleService) Direction(direction string) *AdjustLtvLoa
 func (s *AdjustLtvLoanFlexibleService) Do(ctx context.Context) (res *AdjustLtvLoanFlexibleResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
-		endpoint: "/sapi/v1/loan/flexible/adjust/ltv",
+		endpoint: "/sapi/v2/loan/flexible/adjust/ltv",
 		secType:  secTypeSigned,
 	}
 	r.setParam("loanCoin", s.loanCoin)
