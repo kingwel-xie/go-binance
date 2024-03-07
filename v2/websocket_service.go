@@ -531,6 +531,7 @@ type WsOrderUpdate struct {
 	TradeId                 int64           `json:"t"`
 	IsInOrderBook           bool            `json:"w"` // is the order in the order book?
 	IsMaker                 bool            `json:"m"` // is this order maker?
+	M                       bool            `json:"M"` // Binance said please ignore!!!
 	CreateTime              int64           `json:"O"`
 	FilledQuoteVolume       string          `json:"Z"` // the quote volume that already filled
 	LatestQuoteVolume       string          `json:"Y"` // the quote volume for the latest trade
@@ -604,12 +605,13 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 				errHandler(err)
 				return
 			}
-			// Unmarshal has case sensitive problem
+			// Unmarshal has case-sensitive problem
 			event.TransactionTime = j.Get("T").MustInt64()
 			event.OrderUpdate.TransactionTime = j.Get("T").MustInt64()
 			event.OrderUpdate.Id = j.Get("i").MustInt64()
 			event.OrderUpdate.TradeId = j.Get("t").MustInt64()
 			event.OrderUpdate.FeeAsset = j.Get("N").MustString()
+			event.OrderUpdate.IsMaker = j.Get("m").MustBool()
 		case UserDataEventTypeListStatus:
 			err = json.Unmarshal(message, &event.OCOUpdate)
 			if err != nil {
