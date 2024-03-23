@@ -20,7 +20,7 @@ type CreateUserUniversalTransferService struct {
 	c          *Client
 	types      string
 	asset      string
-	amount     string
+	amount     float64
 	fromSymbol *string
 	toSymbol   *string
 }
@@ -38,7 +38,7 @@ func (s *CreateUserUniversalTransferService) Asset(v string) *CreateUserUniversa
 }
 
 // Amount sets the Amount parameter (MANDATORY).
-func (s *CreateUserUniversalTransferService) Amount(v string) *CreateUserUniversalTransferService {
+func (s *CreateUserUniversalTransferService) Amount(v float64) *CreateUserUniversalTransferService {
 	s.amount = v
 	return s
 }

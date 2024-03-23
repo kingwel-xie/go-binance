@@ -97,6 +97,7 @@ type AccountAsset struct {
 // AccountPosition define accoutn position
 type AccountPosition struct {
 	Symbol                 string `json:"symbol"`
+	PositionAmt            string `json:"positionAmt"`
 	InitialMargin          string `json:"initialMargin"`
 	MaintMargin            string `json:"maintMargin"`
 	UnrealizedProfit       string `json:"unrealizedProfit"`
@@ -109,7 +110,6 @@ type AccountPosition struct {
 	MaxQty                 string `json:"maxQty"`
 	NotionalValue          string `json:"notionalValue"`
 	IsolatedWallet         string `json:"isolatedWallet"`
-	PositionAmt            string `json:"positionAmt"`
 	BreakEvenPrice         string `json:"breakEvenPrice"`
 	UpdateTime             int64  `json:"updateTime"`
 }

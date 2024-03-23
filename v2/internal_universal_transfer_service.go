@@ -13,7 +13,7 @@ type InternalUniversalTransferService struct {
 	clientTranId    *string
 	symbol          *string
 	asset           string
-	amount          string
+	amount          float64
 }
 
 func (s *InternalUniversalTransferService) FromEmail(v string) *InternalUniversalTransferService {
@@ -46,7 +46,7 @@ func (s *InternalUniversalTransferService) Asset(v string) *InternalUniversalTra
 	return s
 }
 
-func (s *InternalUniversalTransferService) Amount(v string) *InternalUniversalTransferService {
+func (s *InternalUniversalTransferService) Amount(v float64) *InternalUniversalTransferService {
 	s.amount = v
 	return s
 }
