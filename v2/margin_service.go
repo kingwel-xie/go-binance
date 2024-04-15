@@ -467,6 +467,16 @@ type GetMarginAccountService struct {
 	c *Client
 }
 
+type T struct {
+	AssetFullName  string `json:"assetFullName"`
+	AssetName      string `json:"assetName"`
+	IsBorrowable   bool   `json:"isBorrowable"`
+	IsMortgageable bool   `json:"isMortgageable"`
+	UserMinBorrow  string `json:"userMinBorrow"`
+	UserMinRepay   string `json:"userMinRepay"`
+	DelistTime     int    `json:"delistTime"`
+}
+
 // Do send request
 func (s *GetMarginAccountService) Do(ctx context.Context, opts ...RequestOption) (res *MarginAccount, err error) {
 	r := &request{
@@ -521,10 +531,10 @@ func (s *GetMarginAssetService) Asset(asset string) *GetMarginAssetService {
 }
 
 // Do send request
-func (s *GetMarginAssetService) Do(ctx context.Context, opts ...RequestOption) (res *MarginAsset, err error) {
+func (s *GetMarginAssetService) Do(ctx context.Context, opts ...RequestOption) (res []*MarginAsset, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/sapi/v1/margin/asset",
+		endpoint: "/sapi/v1/margin/allAssets",
 		secType:  secTypeAPIKey,
 	}
 	r.setParam("asset", s.asset)
@@ -532,8 +542,8 @@ func (s *GetMarginAssetService) Do(ctx context.Context, opts ...RequestOption) (
 	if err != nil {
 		return nil, err
 	}
-	res = new(MarginAsset)
-	err = json.Unmarshal(data, res)
+	res = make([]*MarginAsset, 0)
+	err = json.Unmarshal(data, &res)
 	if err != nil {
 		return nil, err
 	}
@@ -542,12 +552,12 @@ func (s *GetMarginAssetService) Do(ctx context.Context, opts ...RequestOption) (
 
 // MarginAsset define margin asset info
 type MarginAsset struct {
-	FullName      string `json:"assetFullName"`
-	Name          string `json:"assetName"`
-	Borrowable    bool   `json:"isBorrowable"`
-	Mortgageable  bool   `json:"isMortgageable"`
-	UserMinBorrow string `json:"userMinBorrow"`
-	UserMinRepay  string `json:"userMinRepay"`
+	AssetName      string `json:"assetName"`
+	AssetFullName  string `json:"assetFullName"`
+	IsBorrowable   bool   `json:"isBorrowable"`
+	IsMortgageable bool   `json:"isMortgageable"`
+	UserMinBorrow  string `json:"userMinBorrow"`
+	UserMinRepay   string `json:"userMinRepay"`
 }
 
 // GetMarginPairService get margin pair info
