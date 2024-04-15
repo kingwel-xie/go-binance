@@ -1173,3 +1173,30 @@ func (c *Client) NewAdjustLtvLoanFlexibleService() *AdjustLtvLoanFlexibleService
 func (c *Client) NewListLoanLockedService() *ListLoanLockedService {
 	return &ListLoanLockedService{c: c}
 }
+
+// VIP Loan
+
+// NewListVipLoanableCoinService returns crypto-loan list vip loanable data service
+func (c *Client) NewListVipLoanableCoinService() *ListVipLoanableCoinService {
+	return &ListVipLoanableCoinService{c: c}
+}
+
+// NewListVipCollateralCoinService returns crypto-loan list vip collateral data service
+func (c *Client) NewListVipCollateralCoinService() *ListVipCollateralCoinService {
+	return &ListVipCollateralCoinService{c: c}
+}
+
+// NewVipLoanBorrowService returns crypto-loan vip borrow service
+func (c *Client) NewVipLoanBorrowService() *VipLoanBorrowService {
+	return &VipLoanBorrowService{c: c}
+}
+
+// NewVipLoanRepayService returns crypto-loan vip repay service
+func (c *Client) NewVipLoanRepayService() *VipLoanRepayService {
+	return &VipLoanRepayService{c: c}
+}
+
+// NewListVipLoanService returns list crypto-loan vip ongoing order service
+func (c *Client) NewListVipLoanService() *ListVipLoanService {
+	return &ListVipLoanService{c: c}
+}
