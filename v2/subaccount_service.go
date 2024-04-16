@@ -674,3 +674,51 @@ type SubAccountFuturesTransferResponse struct {
 	// seems api doc bug, return `tranId` as int64 actually in production environment
 	TranID int64 `json:"tranId"`
 }
+
+// SubAccountFuturesPositionRiskService Get Detail on Sub-account's Futures position risk (For Master Account)
+type SubAccountFuturesPositionRiskService struct {
+	c           *Client
+	email       string
+	futuresType int
+}
+
+func (s *SubAccountFuturesPositionRiskService) Email(v string) *SubAccountFuturesPositionRiskService {
+	s.email = v
+	return s
+}
+
+func (s *SubAccountFuturesPositionRiskService) FuturesType(v int) *SubAccountFuturesPositionRiskService {
+	s.futuresType = v
+	return s
+}
+
+func (s *SubAccountFuturesPositionRiskService) Do(ctx context.Context, opts ...RequestOption) (res []*SubAccountFuturesPositionRiskEntry, err error) {
+	r := &request{
+		method:   "GET",
+		endpoint: "/sapi/v1/sub-account/futures/positionRisk",
+		secType:  secTypeSigned,
+	}
+	r.setParam("email", s.email)
+	r.setParam("futuresType", s.futuresType)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = make([]*SubAccountFuturesPositionRiskEntry, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+type SubAccountFuturesPositionRiskEntry struct {
+	EntryPrice       string `json:"entryPrice"`
+	Leverage         string `json:"leverage"`
+	MaxNotional      string `json:"maxNotional"`
+	LiquidationPrice string `json:"liquidationPrice"`
+	MarkPrice        string `json:"markPrice"`
+	PositionAmount   string `json:"positionAmount"`
+	Symbol           string `json:"symbol"`
+	UnrealizedProfit string `json:"unrealizedProfit"`
+}

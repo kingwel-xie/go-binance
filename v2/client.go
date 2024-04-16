@@ -849,6 +849,11 @@ func (c *Client) NewSubaccountDepositAddressService() *SubaccountDepositAddressS
 	return &SubaccountDepositAddressService{c: c}
 }
 
+// NewSubAccountFuturesPositionRiskService init subaccount futures position risk service
+func (c *Client) NewSubAccountFuturesPositionRiskService() *SubAccountFuturesPositionRiskService {
+	return &SubAccountFuturesPositionRiskService{c: c}
+}
+
 // NewAssetDividendService init the asset dividend list service
 func (c *Client) NewAssetDividendService() *AssetDividendService {
 	return &AssetDividendService{c: c}
