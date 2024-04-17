@@ -58,8 +58,8 @@ type PositionRisk struct {
 	Leverage         string `json:"leverage"`
 	LiquidationPrice string `json:"liquidationPrice"`
 	MarkPrice        string `json:"markPrice"`
-	MaxNotionalValue string `json:"maxNotionalValue"`
-	PositionAmt      string `json:"positionAmt"`
+	MaxNotionalValue string `json:"maxNotionalValue"` // 当前杠杆倍数允许的名义价值上限
+	PositionAmt      string `json:"positionAmt"`      // 头寸数量，符号代表多空方向, 正数为多，负数为空
 	Symbol           string `json:"symbol"`
 	UnRealizedProfit string `json:"unRealizedProfit"`
 	PositionSide     string `json:"positionSide"`

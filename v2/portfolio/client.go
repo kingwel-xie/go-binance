@@ -497,7 +497,17 @@ func (c *Client) NewGetLeverageBracketService() *GetLeverageBracketService {
 	return &GetLeverageBracketService{c: c}
 }
 
-// NewCommissionRateService returns commission rate
+// NewCommissionRateService returns commission rate service
 func (c *Client) NewCommissionRateService() *CommissionRateService {
 	return &CommissionRateService{c: c}
+}
+
+// NewAssetCollectionService returns asset collection service
+func (c *Client) NewAssetCollectionService() *AssetCollectionService {
+	return &AssetCollectionService{c: c}
+}
+
+// NewBnbTransferService returns BNB transfer service
+func (c *Client) NewBnbTransferService() *BnbTransferService {
+	return &BnbTransferService{c: c}
 }

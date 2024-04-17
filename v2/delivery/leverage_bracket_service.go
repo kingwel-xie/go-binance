@@ -25,6 +25,9 @@ func (s *GetLeverageBracketService) Do(ctx context.Context, opts ...RequestOptio
 		endpoint: "/dapi/v2/leverageBracket",
 		secType:  secTypeSigned,
 	}
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*LeverageBracket{}, err

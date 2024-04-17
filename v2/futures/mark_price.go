@@ -178,7 +178,6 @@ func (s *GetLeverageBracketService) Do(ctx context.Context, opts ...RequestOptio
 		endpoint: "/fapi/v1/leverageBracket",
 		secType:  secTypeSigned,
 	}
-	r.setParam("symbol", s.symbol)
 	if s.symbol != "" {
 		r.setParam("symbol", s.symbol)
 	}

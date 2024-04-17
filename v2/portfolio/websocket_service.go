@@ -27,6 +27,7 @@ func getWsEndpoint() string {
 // WsUserDataEvent define user data event
 type WsUserDataEvent struct {
 	Event               UserDataEventType     `json:"e"`
+	BusinessLine        int64                 `json:"fs"` // UM or CM
 	Time                int64                 `json:"E"`
 	CrossWalletBalance  string                `json:"cw"`
 	MarginCallPositions []WsPosition          `json:"p"`

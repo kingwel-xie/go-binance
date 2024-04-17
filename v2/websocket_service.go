@@ -591,7 +591,6 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 		}
 
 		event := new(WsUserDataEvent)
-
 		err = json.Unmarshal(message, event)
 		if err != nil {
 			errHandler(err)
