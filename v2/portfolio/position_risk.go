@@ -28,6 +28,9 @@ func (s *GetPositionRiskService) Symbol(symbol string) *GetPositionRiskService {
 
 // Do send request
 func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRisk, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: fmt.Sprintf("/papi/v1/%s/positionRisk", s.which),

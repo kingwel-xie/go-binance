@@ -20,6 +20,8 @@ import (
 	"github.com/adshao/go-binance/v2/common"
 )
 
+var errWhichMissing = fmt.Errorf("missing 'which' parameter")
+
 // SideType define side type of order
 type SideType string
 
@@ -442,6 +444,11 @@ func (c *Client) NewGetBalanceService() *GetBalanceService {
 	return &GetBalanceService{c: c}
 }
 
+// NewGetAccountExtService init getting account extend service
+func (c *Client) NewGetAccountExtService() *GetAccountExtService {
+	return &GetAccountExtService{c: c}
+}
+
 // NewGetPositionRiskService init getting position risk service
 func (c *Client) NewGetPositionRiskService() *GetPositionRiskService {
 	return &GetPositionRiskService{c: c}
@@ -475,11 +482,6 @@ func (c *Client) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
 // NewCloseUserStreamService init closing user stream service
 func (c *Client) NewCloseUserStreamService() *CloseUserStreamService {
 	return &CloseUserStreamService{c: c}
-}
-
-// NewExchangeInfoService init exchange info service
-func (c *Client) NewExchangeInfoService() *ExchangeInfoService {
-	return &ExchangeInfoService{c: c}
 }
 
 // NewListUserLiquidationOrdersService init list user's liquidation orders service

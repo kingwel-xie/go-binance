@@ -42,6 +42,9 @@ func (s *HistoricalTradesService) FromID(fromID int64) *HistoricalTradesService 
 
 // Do send request
 func (s *HistoricalTradesService) Do(ctx context.Context, opts ...RequestOption) (res []*Trade, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: fmt.Sprintf("/papi/v1/%s/userTrades", s.which),

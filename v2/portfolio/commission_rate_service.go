@@ -27,6 +27,9 @@ func (s *CommissionRateService) Which(which string) *CommissionRateService {
 
 // Do send request
 func (s *CommissionRateService) Do(ctx context.Context, opts ...RequestOption) (res *CommissionRate, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: fmt.Sprintf("/papi/v1/%s/commissionRate", s.which),

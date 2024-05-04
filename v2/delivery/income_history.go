@@ -1,27 +1,19 @@
-package portfolio
+package delivery
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
 // GetIncomeHistoryService get position margin history service
 type GetIncomeHistoryService struct {
 	c          *Client
-	which      string // 'um' or 'cm'
 	symbol     string
 	incomeType string
 	startTime  *int64
 	endTime    *int64
 	limit      *int64
-}
-
-// Which set which product
-func (s *GetIncomeHistoryService) Which(which string) *GetIncomeHistoryService {
-	s.which = which
-	return s
 }
 
 // Symbol set symbol
@@ -56,12 +48,9 @@ func (s *GetIncomeHistoryService) Limit(limit int64) *GetIncomeHistoryService {
 
 // Do send request
 func (s *GetIncomeHistoryService) Do(ctx context.Context, opts ...RequestOption) (res []*IncomeHistory, err error) {
-	if s.which == "" {
-		return nil, errWhichMissing
-	}
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: fmt.Sprintf("/papi/v1/%s/income", s.which),
+		endpoint: "/dapi/v1/income",
 		secType:  secTypeSigned,
 	}
 	r.setParam("symbol", s.symbol)
@@ -78,7 +67,7 @@ func (s *GetIncomeHistoryService) Do(ctx context.Context, opts ...RequestOption)
 		r.setParam("limit", *s.limit)
 	}
 
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

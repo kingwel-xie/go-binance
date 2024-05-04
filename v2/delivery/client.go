@@ -439,6 +439,11 @@ func (c *Client) NewGetPositionRiskService() *GetPositionRiskService {
 	return &GetPositionRiskService{c: c}
 }
 
+// NewGetIncomeHistoryService init getting income history service
+func (c *Client) NewGetIncomeHistoryService() *GetIncomeHistoryService {
+	return &GetIncomeHistoryService{c: c}
+}
+
 // NewChangeLeverageService init change leverage service
 func (c *Client) NewChangeLeverageService() *ChangeLeverageService {
 	return &ChangeLeverageService{c: c}

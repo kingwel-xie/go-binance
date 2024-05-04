@@ -28,6 +28,9 @@ func (s *GetLeverageBracketService) Symbol(symbol string) *GetLeverageBracketSer
 
 // Do send request
 func (s *GetLeverageBracketService) Do(ctx context.Context, opts ...RequestOption) (res []*LeverageBracket, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: fmt.Sprintf("/papi/v1/%s/leverageBracket", s.which),
@@ -51,8 +54,10 @@ type LeverageBracket struct {
 	Brackets []struct {
 		Bracket          int     `json:"bracket"`
 		InitialLeverage  int     `json:"initialLeverage"`
-		QtyCap           int     `json:"qtyCap"`
-		QtyFloor         int     `json:"qtyFloor"`
+		QtyCap           float64 `json:"qtyCap"`
+		QtyFloor         float64 `json:"qtyFloor"`
+		NotionalCap      float64 `json:"notionalCap"`
+		NotionalFloor    float64 `json:"notionalFloor"`
 		MaintMarginRatio float64 `json:"maintMarginRatio"`
 		Cum              float64 `json:"cum"`
 	} `json:"brackets"`
