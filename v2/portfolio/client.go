@@ -151,7 +151,6 @@ const (
 	ContractTypePerpetual ContractType = "PERPETUAL"
 
 	UserDataEventTypeListenKeyExpired      UserDataEventType = "listenKeyExpired"
-	UserDataEventTypeMarginCall            UserDataEventType = "MARGIN_CALL"
 	UserDataEventTypeAccountUpdate         UserDataEventType = "ACCOUNT_UPDATE"
 	UserDataEventTypeOrderTradeUpdate      UserDataEventType = "ORDER_TRADE_UPDATE"
 	UserDataEventTypeAccountConfigUpdate   UserDataEventType = "ACCOUNT_CONFIG_UPDATE"
