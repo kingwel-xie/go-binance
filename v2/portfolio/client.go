@@ -31,6 +31,9 @@ type PositionSideType string
 // OrderType define order type
 type OrderType string
 
+// StrategyType define order strategy type, conditional order
+type StrategyType string
+
 // TimeInForceType define time in force type of order
 type TimeInForceType string
 
@@ -87,13 +90,14 @@ const (
 	PositionSideTypeLong  PositionSideType = "LONG"
 	PositionSideTypeShort PositionSideType = "SHORT"
 
-	OrderTypeLimit              OrderType = "LIMIT"
-	OrderTypeMarket             OrderType = "MARKET"
-	OrderTypeStop               OrderType = "STOP"
-	OrderTypeStopMarket         OrderType = "STOP_MARKET"
-	OrderTypeTakeProfit         OrderType = "TAKE_PROFIT"
-	OrderTypeTakeProfitMarket   OrderType = "TAKE_PROFIT_MARKET"
-	OrderTypeTrailingStopMarket OrderType = "TRAILING_STOP_MARKET"
+	OrderTypeLimit  OrderType = "LIMIT"
+	OrderTypeMarket OrderType = "MARKET"
+
+	StrategyTypeStop               StrategyType = "STOP"
+	StrategyTypeStopMarket         StrategyType = "STOP_MARKET"
+	StrategyTypeTakeProfit         StrategyType = "TAKE_PROFIT"
+	StrategyTypeTakeProfitMarket   StrategyType = "TAKE_PROFIT_MARKET"
+	StrategyTypeTrailingStopMarket StrategyType = "TRAILING_STOP_MARKET"
 
 	TimeInForceTypeGTC TimeInForceType = "GTC" // Good Till Cancel
 	TimeInForceTypeIOC TimeInForceType = "IOC" // Immediate or Cancel
@@ -117,8 +121,6 @@ const (
 	OrderStatusTypeCanceled        OrderStatusType = "CANCELED"
 	OrderStatusTypeRejected        OrderStatusType = "REJECTED"
 	OrderStatusTypeExpired         OrderStatusType = "EXPIRED"
-	OrderStatusTypeNewInsurance    OrderStatusType = "NEW_INSURANCE"
-	OrderStatusTypeNewADL          OrderStatusType = "NEW_ADL"
 
 	SymbolTypeFuture SymbolType = "FUTURE"
 
@@ -399,11 +401,6 @@ func (c *Client) NewCreateOrderService() *CreateOrderService {
 	return &CreateOrderService{c: c}
 }
 
-// NewCreateBatchOrdersService init creating batch order service
-func (c *Client) NewCreateBatchOrdersService() *CreateBatchOrdersService {
-	return &CreateBatchOrdersService{c: c}
-}
-
 // NewGetOrderService init get order service
 func (c *Client) NewGetOrderService() *GetOrderService {
 	return &GetOrderService{c: c}
@@ -417,11 +414,6 @@ func (c *Client) NewCancelOrderService() *CancelOrderService {
 // NewCancelAllOpenOrdersService init cancel all open orders service
 func (c *Client) NewCancelAllOpenOrdersService() *CancelAllOpenOrdersService {
 	return &CancelAllOpenOrdersService{c: c}
-}
-
-// NewCancelMultipleOrdersService init cancel multiple orders service
-func (c *Client) NewCancelMultipleOrdersService() *CancelMultiplesOrdersService {
-	return &CancelMultiplesOrdersService{c: c}
 }
 
 // NewGetOpenOrderService init get open order service
@@ -487,16 +479,6 @@ func (c *Client) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
 // NewCloseUserStreamService init closing user stream service
 func (c *Client) NewCloseUserStreamService() *CloseUserStreamService {
 	return &CloseUserStreamService{c: c}
-}
-
-// NewListUserLiquidationOrdersService init list user's liquidation orders service
-func (c *Client) NewListUserLiquidationOrdersService() *ListUserLiquidationOrdersService {
-	return &ListUserLiquidationOrdersService{c: c}
-}
-
-// NewListLiquidationOrdersService init funding rate service
-func (c *Client) NewListLiquidationOrdersService() *ListLiquidationOrdersService {
-	return &ListLiquidationOrdersService{c: c}
 }
 
 // NewGetLeverageBracketService init change leverage service

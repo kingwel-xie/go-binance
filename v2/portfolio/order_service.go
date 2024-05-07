@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
-
-	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateOrderService create order
 type CreateOrderService struct {
 	c                *Client
+	which            string // 'um' or 'cm'
 	symbol           string
 	side             SideType
 	positionSide     *PositionSideType
@@ -23,13 +21,19 @@ type CreateOrderService struct {
 	reduceOnly       *bool
 	price            *string
 	newClientOrderID *string
-	stopPrice        *string
-	workingType      *WorkingType
-	activationPrice  *string
-	callbackRate     *string
-	priceProtect     *bool
+	//stopPrice        *string
+	//workingType      *WorkingType
+	//activationPrice  *string
+	//callbackRate     *string
+	//priceProtect     *bool
 	newOrderRespType NewOrderRespType
-	closePosition    *bool
+	//closePosition    *bool
+}
+
+// Which set which product
+func (s *CreateOrderService) Which(which string) *CreateOrderService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -86,35 +90,36 @@ func (s *CreateOrderService) NewClientOrderID(newClientOrderID string) *CreateOr
 	return s
 }
 
-// StopPrice set stopPrice
-func (s *CreateOrderService) StopPrice(stopPrice string) *CreateOrderService {
-	s.stopPrice = &stopPrice
-	return s
-}
-
-// WorkingType set workingType
-func (s *CreateOrderService) WorkingType(workingType WorkingType) *CreateOrderService {
-	s.workingType = &workingType
-	return s
-}
-
-// ActivationPrice set activationPrice
-func (s *CreateOrderService) ActivationPrice(activationPrice string) *CreateOrderService {
-	s.activationPrice = &activationPrice
-	return s
-}
-
-// CallbackRate set callbackRate
-func (s *CreateOrderService) CallbackRate(callbackRate string) *CreateOrderService {
-	s.callbackRate = &callbackRate
-	return s
-}
-
-// PriceProtect set priceProtect
-func (s *CreateOrderService) PriceProtect(priceProtect bool) *CreateOrderService {
-	s.priceProtect = &priceProtect
-	return s
-}
+//
+//// StopPrice set stopPrice
+//func (s *CreateOrderService) StopPrice(stopPrice string) *CreateOrderService {
+//	s.stopPrice = &stopPrice
+//	return s
+//}
+//
+//// WorkingType set workingType
+//func (s *CreateOrderService) WorkingType(workingType WorkingType) *CreateOrderService {
+//	s.workingType = &workingType
+//	return s
+//}
+//
+//// ActivationPrice set activationPrice
+//func (s *CreateOrderService) ActivationPrice(activationPrice string) *CreateOrderService {
+//	s.activationPrice = &activationPrice
+//	return s
+//}
+//
+//// CallbackRate set callbackRate
+//func (s *CreateOrderService) CallbackRate(callbackRate string) *CreateOrderService {
+//	s.callbackRate = &callbackRate
+//	return s
+//}
+//
+//// PriceProtect set priceProtect
+//func (s *CreateOrderService) PriceProtect(priceProtect bool) *CreateOrderService {
+//	s.priceProtect = &priceProtect
+//	return s
+//}
 
 // NewOrderResponseType set newOrderResponseType
 func (s *CreateOrderService) NewOrderResponseType(newOrderResponseType NewOrderRespType) *CreateOrderService {
@@ -122,11 +127,11 @@ func (s *CreateOrderService) NewOrderResponseType(newOrderResponseType NewOrderR
 	return s
 }
 
-// ClosePosition set closePosition
-func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderService {
-	s.closePosition = &closePosition
-	return s
-}
+//// ClosePosition set closePosition
+//func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderService {
+//	s.closePosition = &closePosition
+//	return s
+//}
 
 func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
 
@@ -159,24 +164,24 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	if s.newClientOrderID != nil {
 		m["newClientOrderId"] = *s.newClientOrderID
 	}
-	if s.stopPrice != nil {
-		m["stopPrice"] = *s.stopPrice
-	}
-	if s.workingType != nil {
-		m["workingType"] = *s.workingType
-	}
-	if s.priceProtect != nil {
-		m["priceProtect"] = *s.priceProtect
-	}
-	if s.activationPrice != nil {
-		m["activationPrice"] = *s.activationPrice
-	}
-	if s.callbackRate != nil {
-		m["callbackRate"] = *s.callbackRate
-	}
-	if s.closePosition != nil {
-		m["closePosition"] = *s.closePosition
-	}
+	//if s.stopPrice != nil {
+	//	m["stopPrice"] = *s.stopPrice
+	//}
+	//if s.workingType != nil {
+	//	m["workingType"] = *s.workingType
+	//}
+	//if s.priceProtect != nil {
+	//	m["priceProtect"] = *s.priceProtect
+	//}
+	//if s.activationPrice != nil {
+	//	m["activationPrice"] = *s.activationPrice
+	//}
+	//if s.callbackRate != nil {
+	//	m["callbackRate"] = *s.callbackRate
+	//}
+	//if s.closePosition != nil {
+	//	m["closePosition"] = *s.closePosition
+	//}
 	r.setFormParams(m)
 	data, header, err = s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -187,7 +192,11 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 
 // Do send request
 func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
-	data, header, err := s.createOrder(ctx, "/papi/v1/order", opts...)
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
+	endpoint := fmt.Sprintf("/papi/v1/%s/order", s.which)
+	data, header, err := s.createOrder(ctx, endpoint, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -204,40 +213,51 @@ func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 
 // CreateOrderResponse define create order response
 type CreateOrderResponse struct {
-	Symbol                  string           `json:"symbol"`                      //
-	OrderID                 int64            `json:"orderId"`                     //
-	ClientOrderID           string           `json:"clientOrderId"`               //
-	Price                   string           `json:"price"`                       //
-	OrigQuantity            string           `json:"origQty"`                     //
-	ExecutedQuantity        string           `json:"executedQty"`                 //
-	CumQuote                string           `json:"cumQuote"`                    //
-	ReduceOnly              bool             `json:"reduceOnly"`                  //
-	Status                  OrderStatusType  `json:"status"`                      //
-	StopPrice               string           `json:"stopPrice"`                   // please ignore when order type is TRAILING_STOP_MARKET
-	TimeInForce             TimeInForceType  `json:"timeInForce"`                 //
-	Type                    OrderType        `json:"type"`                        //
-	Side                    SideType         `json:"side"`                        //
-	UpdateTime              int64            `json:"updateTime"`                  // update time
-	WorkingType             WorkingType      `json:"workingType"`                 //
-	ActivatePrice           string           `json:"activatePrice"`               // activation price, only return with TRAILING_STOP_MARKET order
-	PriceRate               string           `json:"priceRate"`                   // callback rate, only return with TRAILING_STOP_MARKET order
-	AvgPrice                string           `json:"avgPrice"`                    //
-	PositionSide            PositionSideType `json:"positionSide"`                //
-	ClosePosition           bool             `json:"closePosition"`               // if Close-All
-	PriceProtect            bool             `json:"priceProtect"`                // if conditional order trigger is protected
-	PriceMatch              string           `json:"priceMatch"`                  // price match mode
-	SelfTradePreventionMode string           `json:"selfTradePreventionMode"`     // self trading preventation mode
-	GoodTillDate            int64            `json:"goodTillDate"`                // order pre-set auto cancel time for TIF GTD order
-	CumQty                  string           `json:"cumQty"`                      //
-	OrigType                OrderType        `json:"origType"`                    //
-	RateLimitOrder10s       string           `json:"rateLimitOrder10s,omitempty"` //
-	RateLimitOrder1m        string           `json:"rateLimitOrder1m,omitempty"`  //
+	ClientOrderId           string           `json:"clientOrderId"`
+	CumQty                  string           `json:"cumQty"`
+	CumQuote                string           `json:"cumQuote"` // UM only
+	CumBase                 string           `json:"cumBase"`  // CM only
+	ExecutedQty             string           `json:"executedQty"`
+	OrderId                 int              `json:"orderId"`
+	AvgPrice                string           `json:"avgPrice"`
+	OrigQty                 string           `json:"origQty"`
+	Price                   string           `json:"price"`
+	ReduceOnly              bool             `json:"reduceOnly"`
+	Side                    SideType         `json:"side"`
+	PositionSide            PositionSideType `json:"positionSide"`
+	Status                  OrderStatusType  `json:"status"`
+	Symbol                  string           `json:"symbol"`
+	Pair                    string           `json:"pair"` // CM
+	TimeInForce             TimeInForceType  `json:"timeInForce"`
+	OrderType               OrderType        `json:"type"`
+	SelfTradePreventionMode string           `json:"selfTradePreventionMode"` // UM
+	GoodTillDate            int64            `json:"goodTillDate"`            // UM
+	UpdateTime              int64            `json:"updateTime"`
+	// Conditional Order
+	BookTime       int64       `json:"bookTime"` // Conditional Order book time
+	StrategyId     int         `json:"strategyId"`
+	StrategyStatus string      `json:"strategyStatus"`
+	StrategyType   string      `json:"strategyType"`
+	StopPrice      string      `json:"stopPrice"`     // please ignore when order type is TRAILING_STOP_MARKET
+	WorkingType    WorkingType `json:"workingType"`   //
+	ActivatePrice  string      `json:"activatePrice"` // activation price, only return with TRAILING_STOP_MARKET order
+	PriceProtect   bool        `json:"priceProtect"`  // if conditional order trigger is protected
+	// extra info
+	RateLimitOrder10s string `json:"rateLimitOrder10s,omitempty"` //
+	RateLimitOrder1m  string `json:"rateLimitOrder1m,omitempty"`  //
 }
 
 // ListOpenOrdersService list opened orders
 type ListOpenOrdersService struct {
 	c      *Client
+	which  string // 'um' or 'cm'
 	symbol string
+}
+
+// Which set which product
+func (s *ListOpenOrdersService) Which(which string) *ListOpenOrdersService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -248,9 +268,12 @@ func (s *ListOpenOrdersService) Symbol(symbol string) *ListOpenOrdersService {
 
 // Do send request
 func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*Order, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/papi/v1/openOrders",
+		endpoint: fmt.Sprintf("/papi/v1/%s/openOrders", s.which),
 		secType:  secTypeSigned,
 	}
 	if s.symbol != "" {
@@ -271,9 +294,16 @@ func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (
 // GetOpenOrderService query current open order
 type GetOpenOrderService struct {
 	c                 *Client
+	which             string // 'um' or 'cm'
 	symbol            string
 	orderID           *int64
 	origClientOrderID *string
+}
+
+// Which set which product
+func (s *GetOpenOrderService) Which(which string) *GetOpenOrderService {
+	s.which = which
+	return s
 }
 
 func (s *GetOpenOrderService) Symbol(symbol string) *GetOpenOrderService {
@@ -292,9 +322,12 @@ func (s *GetOpenOrderService) OrigClientOrderID(origClientOrderID string) *GetOp
 }
 
 func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (res *Order, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/papi/v1/openOrder",
+		endpoint: fmt.Sprintf("/papi/v1/%s/openOrder", s.which),
 		secType:  secTypeSigned,
 	}
 	r.setParam("symbol", s.symbol)
@@ -322,9 +355,16 @@ func (s *GetOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (re
 // GetOrderService get an order
 type GetOrderService struct {
 	c                 *Client
+	which             string // 'um' or 'cm'
 	symbol            string
 	orderID           *int64
 	origClientOrderID *string
+}
+
+// Which set which product
+func (s *GetOrderService) Which(which string) *GetOrderService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -347,9 +387,12 @@ func (s *GetOrderService) OrigClientOrderID(origClientOrderID string) *GetOrderS
 
 // Do send request
 func (s *GetOrderService) Do(ctx context.Context, opts ...RequestOption) (res *Order, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/papi/v1/order",
+		endpoint: fmt.Sprintf("/papi/v1/%s/order", s.which),
 		secType:  secTypeSigned,
 	}
 	r.setParam("symbol", s.symbol)
@@ -405,11 +448,18 @@ type Order struct {
 // ListOrdersService all account orders; active, canceled, or filled
 type ListOrdersService struct {
 	c         *Client
+	which     string // 'um' or 'cm'
 	symbol    string
 	orderID   *int64
 	startTime *int64
 	endTime   *int64
 	limit     *int
+}
+
+// Which set which product
+func (s *ListOrdersService) Which(which string) *ListOrdersService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -444,9 +494,12 @@ func (s *ListOrdersService) Limit(limit int) *ListOrdersService {
 
 // Do send request
 func (s *ListOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*Order, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/papi/v1/allOrders",
+		endpoint: fmt.Sprintf("/papi/v1/%s/allOrders", s.which),
 		secType:  secTypeSigned,
 	}
 	r.setParam("symbol", s.symbol)
@@ -477,9 +530,16 @@ func (s *ListOrdersService) Do(ctx context.Context, opts ...RequestOption) (res 
 // CancelOrderService cancel an order
 type CancelOrderService struct {
 	c                 *Client
+	which             string // 'um' or 'cm'
 	symbol            string
 	orderID           *int64
 	origClientOrderID *string
+}
+
+// Which set which product
+func (s *CancelOrderService) Which(which string) *CancelOrderService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -502,9 +562,12 @@ func (s *CancelOrderService) OrigClientOrderID(origClientOrderID string) *Cancel
 
 // Do send request
 func (s *CancelOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CancelOrderResponse, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodDelete,
-		endpoint: "/papi/v1/order",
+		endpoint: fmt.Sprintf("/papi/v1/%s/order", s.which),
 		secType:  secTypeSigned,
 	}
 	r.setFormParam("symbol", s.symbol)
@@ -554,7 +617,14 @@ type CancelOrderResponse struct {
 // CancelAllOpenOrdersService cancel all open orders
 type CancelAllOpenOrdersService struct {
 	c      *Client
+	which  string // 'um' or 'cm'
 	symbol string
+}
+
+// Which set which product
+func (s *CancelAllOpenOrdersService) Which(which string) *CancelAllOpenOrdersService {
+	s.which = which
+	return s
 }
 
 // Symbol set symbol
@@ -565,6 +635,9 @@ func (s *CancelAllOpenOrdersService) Symbol(symbol string) *CancelAllOpenOrdersS
 
 // Do send request
 func (s *CancelAllOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (err error) {
+	if s.which == "" {
+		return errWhichMissing
+	}
 	r := &request{
 		method:   http.MethodDelete,
 		endpoint: "/papi/v1/allOpenOrders",
@@ -576,361 +649,4 @@ func (s *CancelAllOpenOrdersService) Do(ctx context.Context, opts ...RequestOpti
 		return err
 	}
 	return nil
-}
-
-// CancelMultiplesOrdersService cancel a list of orders
-type CancelMultiplesOrdersService struct {
-	c                     *Client
-	symbol                string
-	orderIDList           []int64
-	origClientOrderIDList []string
-}
-
-// Symbol set symbol
-func (s *CancelMultiplesOrdersService) Symbol(symbol string) *CancelMultiplesOrdersService {
-	s.symbol = symbol
-	return s
-}
-
-// OrderID set orderID
-func (s *CancelMultiplesOrdersService) OrderIDList(orderIDList []int64) *CancelMultiplesOrdersService {
-	s.orderIDList = orderIDList
-	return s
-}
-
-// OrigClientOrderID set origClientOrderID
-func (s *CancelMultiplesOrdersService) OrigClientOrderIDList(origClientOrderIDList []string) *CancelMultiplesOrdersService {
-	s.origClientOrderIDList = origClientOrderIDList
-	return s
-}
-
-// Do send request
-func (s *CancelMultiplesOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*CancelOrderResponse, err error) {
-	r := &request{
-		method:   http.MethodDelete,
-		endpoint: "/papi/v1/batchOrders",
-		secType:  secTypeSigned,
-	}
-	r.setFormParam("symbol", s.symbol)
-	if s.orderIDList != nil {
-		// convert a slice of integers to a string e.g. [1 2 3] => "[1,2,3]"
-		orderIDListString := strings.Join(strings.Fields(fmt.Sprint(s.orderIDList)), ",")
-		r.setFormParam("orderIdList", orderIDListString)
-	}
-	if s.origClientOrderIDList != nil {
-		r.setFormParam("origClientOrderIdList", s.origClientOrderIDList)
-	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
-	if err != nil {
-		return nil, err
-	}
-	res = make([]*CancelOrderResponse, 0)
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return []*CancelOrderResponse{}, err
-	}
-	return res, nil
-}
-
-// ListLiquidationOrdersService list liquidation orders
-type ListLiquidationOrdersService struct {
-	c         *Client
-	symbol    *string
-	startTime *int64
-	endTime   *int64
-	limit     *int
-}
-
-// Symbol set symbol
-func (s *ListLiquidationOrdersService) Symbol(symbol string) *ListLiquidationOrdersService {
-	s.symbol = &symbol
-	return s
-}
-
-// StartTime set startTime
-func (s *ListLiquidationOrdersService) StartTime(startTime int64) *ListLiquidationOrdersService {
-	s.startTime = &startTime
-	return s
-}
-
-// EndTime set startTime
-func (s *ListLiquidationOrdersService) EndTime(endTime int64) *ListLiquidationOrdersService {
-	s.endTime = &endTime
-	return s
-}
-
-// Limit set limit
-func (s *ListLiquidationOrdersService) Limit(limit int) *ListLiquidationOrdersService {
-	s.limit = &limit
-	return s
-}
-
-// Do send request
-func (s *ListLiquidationOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*LiquidationOrder, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/papi/v1/allForceOrders",
-		secType:  secTypeNone,
-	}
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
-	if err != nil {
-		return []*LiquidationOrder{}, err
-	}
-	res = make([]*LiquidationOrder, 0)
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return []*LiquidationOrder{}, err
-	}
-	return res, nil
-}
-
-// LiquidationOrder define liquidation order
-type LiquidationOrder struct {
-	Symbol           string          `json:"symbol"`
-	Price            string          `json:"price"`
-	OrigQuantity     string          `json:"origQty"`
-	ExecutedQuantity string          `json:"executedQty"`
-	AveragePrice     string          `json:"avragePrice"`
-	Status           OrderStatusType `json:"status"`
-	TimeInForce      TimeInForceType `json:"timeInForce"`
-	Type             OrderType       `json:"type"`
-	Side             SideType        `json:"side"`
-	Time             int64           `json:"time"`
-}
-
-// ListUserLiquidationOrdersService lists user's liquidation orders
-type ListUserLiquidationOrdersService struct {
-	c             *Client
-	symbol        *string
-	autoCloseType ForceOrderCloseType
-	startTime     *int64
-	endTime       *int64
-	limit         *int
-}
-
-// Symbol set symbol
-func (s *ListUserLiquidationOrdersService) Symbol(symbol string) *ListUserLiquidationOrdersService {
-	s.symbol = &symbol
-	return s
-}
-
-// AutoCloseType set symbol
-func (s *ListUserLiquidationOrdersService) AutoCloseType(autoCloseType ForceOrderCloseType) *ListUserLiquidationOrdersService {
-	s.autoCloseType = autoCloseType
-	return s
-}
-
-// StartTime set startTime
-func (s *ListUserLiquidationOrdersService) StartTime(startTime int64) *ListUserLiquidationOrdersService {
-	s.startTime = &startTime
-	return s
-}
-
-// EndTime set endTime
-func (s *ListUserLiquidationOrdersService) EndTime(endTime int64) *ListUserLiquidationOrdersService {
-	s.endTime = &endTime
-	return s
-}
-
-// Limit set limit
-func (s *ListUserLiquidationOrdersService) Limit(limit int) *ListUserLiquidationOrdersService {
-	s.limit = &limit
-	return s
-}
-
-// Do send request
-func (s *ListUserLiquidationOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*UserLiquidationOrder, err error) {
-	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/papi/v1/forceOrders",
-		secType:  secTypeSigned,
-	}
-
-	r.setParam("autoCloseType", s.autoCloseType)
-	if s.symbol != nil {
-		r.setParam("symbol", *s.symbol)
-	}
-	if s.startTime != nil {
-		r.setParam("startTime", *s.startTime)
-	}
-	if s.endTime != nil {
-		r.setParam("endTime", *s.endTime)
-	}
-	if s.limit != nil {
-		r.setParam("limit", *s.limit)
-	}
-	data, _, err := s.c.callAPI(ctx, r, opts...)
-	if err != nil {
-		return []*UserLiquidationOrder{}, err
-	}
-	res = make([]*UserLiquidationOrder, 0)
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return []*UserLiquidationOrder{}, err
-	}
-	return res, nil
-}
-
-// UserLiquidationOrder defines user's liquidation order
-type UserLiquidationOrder struct {
-	OrderId          int64            `json:"orderId"`
-	Symbol           string           `json:"symbol"`
-	Status           OrderStatusType  `json:"status"`
-	ClientOrderId    string           `json:"clientOrderId"`
-	Price            string           `json:"price"`
-	AveragePrice     string           `json:"avgPrice"`
-	OrigQuantity     string           `json:"origQty"`
-	ExecutedQuantity string           `json:"executedQty"`
-	CumQuote         string           `json:"cumQuote"`
-	TimeInForce      TimeInForceType  `json:"timeInForce"`
-	Type             OrderType        `json:"type"`
-	ReduceOnly       bool             `json:"reduceOnly"`
-	ClosePosition    bool             `json:"closePosition"`
-	Side             SideType         `json:"side"`
-	PositionSide     PositionSideType `json:"positionSide"`
-	StopPrice        string           `json:"stopPrice"`
-	WorkingType      WorkingType      `json:"workingType"`
-	OrigType         string           `json:"origType"`
-	Time             int64            `json:"time"`
-	UpdateTime       int64            `json:"updateTime"`
-}
-
-type CreateBatchOrdersService struct {
-	c      *Client
-	orders []*CreateOrderService
-}
-
-// CreateBatchOrdersResponse contains the response from CreateBatchOrders operation
-type CreateBatchOrdersResponse struct {
-	// Total number of messages in the response
-	N int
-	// List of orders which were placed successfully which can have a length between 0 and N
-	Orders []*Order
-	// List of errors of length N, where each item corresponds to a nil value if
-	// the order from that specific index was placed succeessfully OR an non-nil *APIError if there was an error with
-	// the order at that index
-	Errors []error
-}
-
-func newCreateBatchOrdersResponse(n int) *CreateBatchOrdersResponse {
-	return &CreateBatchOrdersResponse{
-		N:      n,
-		Errors: make([]error, n),
-	}
-}
-
-func (s *CreateBatchOrdersService) OrderList(orders []*CreateOrderService) *CreateBatchOrdersService {
-	s.orders = orders
-	return s
-}
-
-func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res *CreateBatchOrdersResponse, err error) {
-	r := &request{
-		method:   http.MethodPost,
-		endpoint: "/papi/v1/batchOrders",
-		secType:  secTypeSigned,
-	}
-
-	orders := []params{}
-	for _, order := range s.orders {
-		m := params{
-			"symbol":           order.symbol,
-			"side":             order.side,
-			"type":             order.orderType,
-			"quantity":         order.quantity,
-			"newOrderRespType": order.newOrderRespType,
-		}
-
-		if order.positionSide != nil {
-			m["positionSide"] = *order.positionSide
-		}
-		if order.timeInForce != nil {
-			m["timeInForce"] = *order.timeInForce
-		}
-		if order.reduceOnly != nil {
-			m["reduceOnly"] = *order.reduceOnly
-		}
-		if order.price != nil {
-			m["price"] = *order.price
-		}
-		if order.newClientOrderID != nil {
-			m["newClientOrderId"] = *order.newClientOrderID
-		}
-		if order.stopPrice != nil {
-			m["stopPrice"] = *order.stopPrice
-		}
-		if order.workingType != nil {
-			m["workingType"] = *order.workingType
-		}
-		if order.priceProtect != nil {
-			m["priceProtect"] = *order.priceProtect
-		}
-		if order.activationPrice != nil {
-			m["activationPrice"] = *order.activationPrice
-		}
-		if order.callbackRate != nil {
-			m["callbackRate"] = *order.callbackRate
-		}
-		if order.closePosition != nil {
-			m["closePosition"] = *order.closePosition
-		}
-		orders = append(orders, m)
-	}
-	b, err := json.Marshal(orders)
-	if err != nil {
-		return &CreateBatchOrdersResponse{}, err
-	}
-	m := params{
-		"batchOrders": string(b),
-	}
-
-	r.setFormParams(m)
-
-	data, _, err := s.c.callAPI(ctx, r, opts...)
-
-	if err != nil {
-		return &CreateBatchOrdersResponse{}, err
-	}
-
-	rawMessages := make([]*json.RawMessage, 0)
-
-	err = json.Unmarshal(data, &rawMessages)
-	if err != nil {
-		return &CreateBatchOrdersResponse{}, err
-	}
-
-	batchCreateOrdersResponse := newCreateBatchOrdersResponse(len(rawMessages))
-	for i, j := range rawMessages {
-		// check if response is an API error
-		e := new(common.APIError)
-		if err := json.Unmarshal(*j, e); err != nil {
-			return nil, err
-		}
-
-		if e.Code > 0 || e.Message != "" {
-			batchCreateOrdersResponse.Errors[i] = e
-			continue
-		}
-
-		o := new(Order)
-		if err := json.Unmarshal(*j, o); err != nil {
-			return nil, err
-		}
-
-		batchCreateOrdersResponse.Orders = append(batchCreateOrdersResponse.Orders, o)
-	}
-
-	return batchCreateOrdersResponse, nil
 }
