@@ -21,9 +21,9 @@ func (s *AssetCollectionService) Asset(asset string) *AssetCollectionService {
 // Do send request
 func (s *AssetCollectionService) Do(ctx context.Context, opts ...RequestOption) (ret bool, err error) {
 	r := &request{
-		method:   http.MethodGet,
+		method:   http.MethodPost,
 		endpoint: "/papi/v1/auto-collection",
-		secType:  secTypeAPIKey,
+		secType:  secTypeSigned,
 	}
 	if s.asset != nil {
 		r.setParam("asset", *s.asset)
@@ -66,9 +66,9 @@ func (s *BnbTransferService) TransferSide(transferSide string) *BnbTransferServi
 // Do send request
 func (s *BnbTransferService) Do(ctx context.Context, opts ...RequestOption) (tranId string, err error) {
 	r := &request{
-		method:   http.MethodGet,
-		endpoint: "/papi/v1/auto-collection",
-		secType:  secTypeAPIKey,
+		method:   http.MethodPost,
+		endpoint: "/papi/v1/bnb-transfer",
+		secType:  secTypeSigned,
 	}
 	r.setParam("amount", s.amount)
 	r.setParam("transferSide", s.transferSide)
