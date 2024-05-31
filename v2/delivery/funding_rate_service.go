@@ -11,6 +11,8 @@ type ListFundingRateService struct {
 	c      *Client
 	symbol string
 	limit  *int
+	startTime *int64
+	endTime *int64
 }
 
 // Symbol set symbol
@@ -25,6 +27,19 @@ func (s *ListFundingRateService) Limit(limit int) *ListFundingRateService {
 	return s
 }
 
+// StartTime set startTime
+func (s *ListFundingRateService) StartTime(startTime int64) *ListFundingRateService {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime set startTime
+func (s *ListFundingRateService) EndTime(endTime int64) *ListFundingRateService {
+	s.endTime = &endTime
+	return s
+}
+
+
 // Do send request
 func (s *ListFundingRateService) Do(ctx context.Context, opts ...RequestOption) (res []*FundingRate, err error) {
 	r := &request{
@@ -34,6 +49,12 @@ func (s *ListFundingRateService) Do(ctx context.Context, opts ...RequestOption) 
 	r.setParam("symbol", s.symbol)
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
