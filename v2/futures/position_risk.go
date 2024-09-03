@@ -22,7 +22,7 @@ func (s *GetPositionRiskService) Symbol(symbol string) *GetPositionRiskService {
 func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) (res []*PositionRisk, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/fapi/v2/positionRisk",
+		endpoint: "/fapi/v3/positionRisk",
 		secType:  secTypeSigned,
 	}
 	if s.symbol != "" {
@@ -42,19 +42,20 @@ func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) 
 
 // PositionRisk define position risk info
 type PositionRisk struct {
+	Symbol           string `json:"symbol"`
+	PositionAmt      string `json:"positionAmt"`
 	EntryPrice       string `json:"entryPrice"`
 	BreakEvenPrice   string `json:"breakEvenPrice"`
-	MarginType       string `json:"marginType"`
-	IsAutoAddMargin  string `json:"isAutoAddMargin"`
-	IsolatedMargin   string `json:"isolatedMargin"`
-	Leverage         string `json:"leverage"`
-	LiquidationPrice string `json:"liquidationPrice"`
 	MarkPrice        string `json:"markPrice"`
-	MaxNotionalValue string `json:"maxNotionalValue"`
-	PositionAmt      string `json:"positionAmt"`
-	Symbol           string `json:"symbol"`
 	UnRealizedProfit string `json:"unRealizedProfit"`
+	LiquidationPrice string `json:"liquidationPrice"`
+	Leverage         string `json:"leverage"`
+	MaxNotionalValue string `json:"maxNotionalValue"`
+	MarginType       string `json:"marginType"`
+	IsolatedMargin   string `json:"isolatedMargin"`
+	IsAutoAddMargin  string `json:"isAutoAddMargin"`
 	PositionSide     string `json:"positionSide"`
 	Notional         string `json:"notional"`
 	IsolatedWallet   string `json:"isolatedWallet"`
+	UpdateTime       int64  `json:"updateTime"`
 }

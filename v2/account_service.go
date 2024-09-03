@@ -7,7 +7,14 @@ import (
 
 // GetAccountService get account info
 type GetAccountService struct {
-	c *Client
+	c                *Client
+	omitZeroBalances *bool
+}
+
+// OmitZeroBalances ignores the zero balance.
+func (s *GetAccountService) OmitZeroBalances(v bool) *GetAccountService {
+	s.omitZeroBalances = &v
+	return s
 }
 
 // Do send request
@@ -16,6 +23,9 @@ func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/api/v3/account",
 		secType:  secTypeSigned,
+	}
+	if s.omitZeroBalances != nil {
+		r.setParam("omitZeroBalances", *s.omitZeroBalances)
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {

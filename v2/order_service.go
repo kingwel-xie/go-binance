@@ -389,13 +389,13 @@ type OCOOrderReport struct {
 	IcebergQuantity          string          `json:"icebergQty"`
 }
 
-// ListOpenOcoService list opened oco
-type ListOpenOcoService struct {
+// ListOpenOrderService list opened orders
+type ListOpenOrderService struct {
 	c *Client
 }
 
-// oco define oco info
-type Oco struct {
+// OpenOrderList define open order info
+type OpenOrderList struct {
 	Symbol            string   `json:"symbol"`
 	OrderListId       int64    `json:"orderListId"`
 	ContingencyType   string   `json:"contingencyType"`
@@ -407,20 +407,20 @@ type Oco struct {
 }
 
 // Do send request
-func (s *ListOpenOcoService) Do(ctx context.Context, opts ...RequestOption) (res []*Oco, err error) {
+func (s *ListOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (res []*OpenOrderList, err error) {
 	r := &request{
 		method:   http.MethodGet,
-		endpoint: "/api/v3/openOrderList ",
+		endpoint: "/api/v3/openOrderList",
 		secType:  secTypeSigned,
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
-		return []*Oco{}, err
+		return []*OpenOrderList{}, err
 	}
-	res = make([]*Oco, 0)
+	res = make([]*OpenOrderList, 0)
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return []*Oco{}, err
+		return []*OpenOrderList{}, err
 	}
 	return res, nil
 }

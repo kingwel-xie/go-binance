@@ -545,9 +545,9 @@ func (c *Client) NewListOpenOrdersService() *ListOpenOrdersService {
 	return &ListOpenOrdersService{c: c}
 }
 
-// NewListOpenOcoService init list open oco service
-func (c *Client) NewListOpenOcoService() *ListOpenOcoService {
-	return &ListOpenOcoService{c: c}
+// NewListOpenOrderService init list open order service
+func (c *Client) NewListOpenOrderService() *ListOpenOrderService {
+	return &ListOpenOrderService{c: c}
 }
 
 // NewListOrdersService init listing orders service
