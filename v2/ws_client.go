@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
+	"github.com/adshao/go-binance/v2/common"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,6 +22,47 @@ var (
 	WsAPIMainURL    = "wss://ws-api.binance.com:443/ws-api/v3"
 	WsAPITestnetURL = "wss://testnet.binance.vision/ws-api/v3"
 )
+
+type _ResponseMap struct {
+	lock sync.Mutex
+	d    map[string]chan *WsApiResponse
+}
+
+func (m _ResponseMap) LoadAndDelete(id string) chan *WsApiResponse {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	if a := m.d[id]; a != nil {
+		delete(m.d, id)
+		return a
+	}
+	return nil
+}
+
+func (m _ResponseMap) Set(id string, ch chan *WsApiResponse) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.d[id] = ch
+}
+
+var apiResponses = _ResponseMap{d: make(map[string]chan *WsApiResponse)}
+
+type WsApiResponse struct {
+	Id     string `json:"id"`
+	Status int    `json:"status"`
+	Error  struct {
+		Code int64  `json:"code"`
+		Msg  string `json:"msg"`
+	} `json:"error"`
+	//Result     interface{} `json:"result"`
+	RateLimits []struct {
+		RateLimitType string `json:"rateLimitType"`
+		Interval      string `json:"interval"`
+		IntervalNum   int    `json:"intervalNum"`
+		Limit         int    `json:"limit"`
+		Count         int    `json:"count"`
+	} `json:"rateLimits"`
+	RawMessage []byte
+}
 
 // Global enums
 //const (
@@ -177,6 +220,24 @@ func getWsAPIEndpoint() string {
 // You should always call this function before using this SDK.
 // Services will be created by the form client.NewXXXService().
 func NewWsClient(apiKey, secretKey string) *WsClient {
+	c, stopC := makeConn()
+	if c == nil {
+		return nil
+	}
+
+	return &WsClient{
+		APIKey:    apiKey,
+		SecretKey: secretKey,
+		BaseURL:   getWsAPIEndpoint(),
+		UserAgent: "Binance/golang",
+		Conn:      c,
+		Logger:    log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
+		StopC:     stopC,
+		Debug:     true,
+	}
+}
+
+func makeConn() (*websocket.Conn, chan struct{}) {
 	Dialer := websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
 		HandshakeTimeout:  45 * time.Second,
@@ -185,7 +246,7 @@ func NewWsClient(apiKey, secretKey string) *WsClient {
 
 	c, _, err := Dialer.Dial(getWsAPIEndpoint(), nil)
 	if err != nil {
-		return nil
+		return nil, nil
 	}
 	c.SetReadLimit(655350)
 	doneC := make(chan struct{})
@@ -207,6 +268,9 @@ func NewWsClient(apiKey, secretKey string) *WsClient {
 			case <-stopC:
 				silent = true
 			case <-doneC:
+				if !silent {
+					//handleDisconnected()
+				}
 			}
 			c.Close()
 		}()
@@ -219,21 +283,21 @@ func NewWsClient(apiKey, secretKey string) *WsClient {
 				}
 				return
 			}
-			//handler(message)
-			fmt.Println("recv:", message)
+			res := new(WsApiResponse)
+			err = json.Unmarshal(message, res)
+			if err != nil {
+				//errHandler(err)
+				return
+			}
+			if a := apiResponses.LoadAndDelete(res.Id); a != nil {
+				res.RawMessage = message
+				a <- res
+				close(a)
+			}
 		}
 	}()
 
-	return &WsClient{
-		APIKey:    apiKey,
-		SecretKey: secretKey,
-		BaseURL:   getWsAPIEndpoint(),
-		UserAgent: "Binance/golang",
-		Conn:      c,
-		Logger:    log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
-		StopC:     stopC,
-		Debug:     true,
-	}
+	return c, stopC
 }
 
 //type doFunc func(req *http.Request) (*http.Response, error)
@@ -252,6 +316,32 @@ type WsClient struct {
 	StopC      chan struct{}
 }
 
+func (c *WsClient) handleDisconnected() {
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			// 使用 select 语句同时等待超时和上下文完成
+			select {
+			//case <-sm.ctx.Done():
+			//	// 上下文已完成，可能是超时或取消
+			//	log.Info("%s stream, context terminated...", sm.name)
+			//	return
+			case <-ticker.C:
+				conn, stopC := makeConn()
+				if conn != nil {
+					c.Conn = conn
+					c.StopC = stopC
+					// well done, break the loop
+					return
+				}
+				//log.Warnf("failed to connect to %s stream, %v, retrying...", sm.name, err)
+			}
+		}
+	}()
+}
+
 func (c *WsClient) debug(format string, v ...interface{}) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
@@ -264,6 +354,7 @@ type wsRequest struct {
 	query      params
 	recvWindow int64
 	secType    secType
+	ch         chan interface{}
 }
 
 // addParam add param with key/value to query string
@@ -344,13 +435,20 @@ func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) (data []byte, err 
 		return []byte{}, err
 	}
 
+	// allocate channel, size 1
+	id, ch := uuid.NewString(), make(chan *WsApiResponse, 1)
+
 	req := map[string]interface{}{
-		"id":     uuid.NewString(),
+		"id":     id,
 		"method": r.method,
-		"params": r.query,
+	}
+	if len(r.query) > 0 {
+		req["params"] = r.query
 	}
 
 	c.debug("wsRequest: %#v", req)
+
+	apiResponses.Set(id, ch)
 	err = c.Conn.WriteJSON(req)
 	//f := c.do
 	//if f == nil {
@@ -360,23 +458,26 @@ func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) (data []byte, err 
 	if err != nil {
 		return []byte{}, err
 	}
+
+	res := <-ch
+
+	//data = res
+
 	//data, err = io.ReadAll(res.Body)
 	//if err != nil {
 	//	return []byte{}, err
 	//}
-	//
-	//c.debug("response: %#v", res)
-	//c.debug("response body: %s", string(data))
-	//c.debug("response status code: %d", res.StatusCode)
-	//
-	//if res.StatusCode >= http.StatusBadRequest {
-	//	apiErr := new(common.APIError)
-	//	e := json.Unmarshal(data, apiErr)
-	//	if e != nil {
-	//		c.debug("failed to unmarshal json: %s", e)
-	//	}
-	//	return nil, apiErr
-	//}
+
+	c.debug("response status code: %d", res.Status)
+	c.debug("response raw: %s", string(res.RawMessage))
+	c.debug("response: %#v", res.Error)
+
+	if res.Status >= http.StatusBadRequest {
+		apiErr := new(common.APIError)
+		apiErr.Code = res.Error.Code
+		apiErr.Message = res.Error.Msg
+		return nil, apiErr
+	}
 	return data, nil
 }
 
@@ -405,17 +506,33 @@ func (s *WsPingService) Do(ctx context.Context) (err error) {
 	return err
 }
 
-//
-//// NewServerTimeService init server time service
-//func (c *WsClient) NewServerTimeService() *ServerTimeService {
-//	return &ServerTimeService{c: c}
-//}
-//
-//// NewSetServerTimeService init set server time service
-//func (c *WsClient) NewSetServerTimeService() *SetServerTimeService {
-//	return &SetServerTimeService{c: c}
-//}
-//
+// NewServerTimeService init server time service
+func (c *WsClient) NewServerTimeService() *WsServerTimeService {
+	return &WsServerTimeService{c: c}
+}
+
+// WsServerTimeService get server time
+type WsServerTimeService struct {
+	c *WsClient
+}
+
+// Do send request
+func (s *WsServerTimeService) Do(ctx context.Context) (serverTime int64, err error) {
+	r := &wsRequest{
+		method: "time",
+	}
+	data, err := s.c.callAPI(ctx, r)
+	if err != nil {
+		return 0, err
+	}
+	j, err := newJSON(data)
+	if err != nil {
+		return 0, err
+	}
+	serverTime = j.Get("serverTime").MustInt64()
+	return serverTime, nil
+}
+
 //// NewDepthService init depth service
 //func (c *WsClient) NewDepthService() *DepthService {
 //	return &DepthService{c: c}
