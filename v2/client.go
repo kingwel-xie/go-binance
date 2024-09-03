@@ -205,6 +205,7 @@ const (
 	LiquidityOperationTypeCombination LiquidityOperationType = "COMBINATION"
 	LiquidityOperationTypeSingle      LiquidityOperationType = "SINGLE"
 
+	apiKey        = "apiKey"
 	timestampKey  = "timestamp"
 	signatureKey  = "signature"
 	recvWindowKey = "recvWindow"
