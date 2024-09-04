@@ -17,6 +17,15 @@ import (
 	"time"
 )
 
+type WsClientState int
+
+const (
+	WsInit         WsClientState = 0
+	WsConnecting   WsClientState = 1
+	WsConnected    WsClientState = 2
+	WsAdminClosing WsClientState = 3
+)
+
 // Endpoints
 var (
 	WsAPIMainURL    = "wss://ws-api.binance.com:443/ws-api/v3"
@@ -53,7 +62,7 @@ type WsApiResponse struct {
 		Code int64  `json:"code"`
 		Msg  string `json:"msg"`
 	} `json:"error"`
-	//Result     interface{} `json:"result"`
+	Result     ObjectType `json:"result"`
 	RateLimits []struct {
 		RateLimitType string `json:"rateLimitType"`
 		Interval      string `json:"interval"`
@@ -62,6 +71,16 @@ type WsApiResponse struct {
 		Count         int    `json:"count"`
 	} `json:"rateLimits"`
 	RawMessage []byte
+}
+
+// 自定义类型
+type ObjectType string
+
+// 实现 UnmarshalJSON 方法
+func (o *ObjectType) UnmarshalJSON(data []byte) error {
+	// 将 JSON 对象解析为字符串
+	*o = ObjectType(data) // 直接将原始数据赋值为字符串
+	return nil
 }
 
 // Global enums
@@ -220,12 +239,12 @@ func getWsAPIEndpoint() string {
 // You should always call this function before using this SDK.
 // Services will be created by the form client.NewXXXService().
 func NewWsClient(apiKey, secretKey string) *WsClient {
-	c, stopC := makeConn()
+	c, stopC, disconnectedC := makeConn()
 	if c == nil {
 		return nil
 	}
 
-	return &WsClient{
+	client := &WsClient{
 		APIKey:    apiKey,
 		SecretKey: secretKey,
 		BaseURL:   getWsAPIEndpoint(),
@@ -234,10 +253,15 @@ func NewWsClient(apiKey, secretKey string) *WsClient {
 		Logger:    log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
 		StopC:     stopC,
 		Debug:     true,
+		state:     WsConnected,
 	}
+
+	client.handleDisconnected(disconnectedC)
+
+	return client
 }
 
-func makeConn() (*websocket.Conn, chan struct{}) {
+func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 	Dialer := websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
 		HandshakeTimeout:  45 * time.Second,
@@ -246,11 +270,12 @@ func makeConn() (*websocket.Conn, chan struct{}) {
 
 	c, _, err := Dialer.Dial(getWsAPIEndpoint(), nil)
 	if err != nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 	c.SetReadLimit(655350)
 	doneC := make(chan struct{})
 	stopC := make(chan struct{})
+	disconnectedC := make(chan struct{})
 	go func() {
 		// This function will exit either on error from
 		// websocket.Conn.ReadMessage or when the stopC channel is
@@ -262,23 +287,21 @@ func makeConn() (*websocket.Conn, chan struct{}) {
 		// Wait for the stopC channel to be closed.  We do that in a
 		// separate goroutine because ReadMessage is a blocking
 		// operation.
-		silent := false
+		adminForced := false
 		go func() {
 			select {
 			case <-stopC:
-				silent = true
+				adminForced = true
 			case <-doneC:
-				if !silent {
-					//handleDisconnected()
-				}
+				close(disconnectedC)
 			}
-			c.Close()
+			_ = c.Close()
+
 		}()
 		for {
 			_, message, err := c.ReadMessage()
 			if err != nil {
-				if !silent {
-					//errHandler(err)
+				if !adminForced {
 					fmt.Println("ws error:", err)
 				}
 				return
@@ -286,7 +309,7 @@ func makeConn() (*websocket.Conn, chan struct{}) {
 			res := new(WsApiResponse)
 			err = json.Unmarshal(message, res)
 			if err != nil {
-				//errHandler(err)
+				//fmt.Println("unmarshal error:", err)
 				return
 			}
 			if a := apiResponses.LoadAndDelete(res.Id); a != nil {
@@ -297,7 +320,7 @@ func makeConn() (*websocket.Conn, chan struct{}) {
 		}
 	}()
 
-	return c, stopC
+	return c, stopC, disconnectedC
 }
 
 //type doFunc func(req *http.Request) (*http.Response, error)
@@ -314,10 +337,22 @@ type WsClient struct {
 	TimeOffset int64
 	do         doFunc
 	StopC      chan struct{}
+
+	state WsClientState // init/connecting/connected
 }
 
-func (c *WsClient) handleDisconnected() {
+func (c *WsClient) handleDisconnected(ch chan struct{}) {
 	go func() {
+		select {
+		case <-ch:
+		}
+		// if it is triggered by AdminClose, just ignore
+		if c.state == WsAdminClosing {
+			return
+		}
+		c.state = WsConnecting
+		c.debug("disconnected, try reconnecting later...")
+
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 
@@ -329,14 +364,18 @@ func (c *WsClient) handleDisconnected() {
 			//	log.Info("%s stream, context terminated...", sm.name)
 			//	return
 			case <-ticker.C:
-				conn, stopC := makeConn()
+				conn, stopC, disconnectedC := makeConn()
 				if conn != nil {
 					c.Conn = conn
 					c.StopC = stopC
+					c.state = WsConnected
 					// well done, break the loop
+					c.handleDisconnected(disconnectedC)
+
+					c.debug("reconnected with %s", c.BaseURL)
 					return
 				}
-				//log.Warnf("failed to connect to %s stream, %v, retrying...", sm.name, err)
+				c.debug("failed to connect to %s, retrying later...", c.BaseURL)
 			}
 		}
 	}()
@@ -346,6 +385,11 @@ func (c *WsClient) debug(format string, v ...interface{}) {
 	if c.Debug {
 		c.Logger.Printf(format, v...)
 	}
+}
+
+func (c *WsClient) Close() {
+	c.state = WsAdminClosing
+	close(c.StopC)
 }
 
 // wsRequest define an API wsRequest
@@ -429,8 +473,13 @@ func (c *WsClient) parseRequest(r *wsRequest) (err error) {
 	return nil
 }
 
-func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) (data []byte, err error) {
-	err = c.parseRequest(r)
+func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) ([]byte, error) {
+	// check client state
+	if c.state != WsConnected {
+		return []byte{}, fmt.Errorf("not connected")
+	}
+
+	err := c.parseRequest(r)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -459,26 +508,30 @@ func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) (data []byte, err 
 		return []byte{}, err
 	}
 
-	res := <-ch
+	// timeout context
+	ctx2, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
 
-	//data = res
+	select {
+	case <-ctx.Done():
+		return []byte{}, ctx.Err()
 
-	//data, err = io.ReadAll(res.Body)
-	//if err != nil {
-	//	return []byte{}, err
-	//}
+	case <-ctx2.Done():
+		return []byte{}, ctx2.Err()
 
-	c.debug("response status code: %d", res.Status)
-	c.debug("response raw: %s", string(res.RawMessage))
-	c.debug("response: %#v", res.Error)
+	case res := <-ch:
+		c.debug("response status code: %d", res.Status)
+		c.debug("response raw: %s", string(res.Result))
+		c.debug("response: %#v", res.Error)
 
-	if res.Status >= http.StatusBadRequest {
-		apiErr := new(common.APIError)
-		apiErr.Code = res.Error.Code
-		apiErr.Message = res.Error.Msg
-		return nil, apiErr
+		if res.Status >= http.StatusBadRequest {
+			apiErr := new(common.APIError)
+			apiErr.Code = res.Error.Code
+			apiErr.Message = res.Error.Msg
+			return nil, apiErr
+		}
+		return []byte(res.Result), nil
 	}
-	return data, nil
 }
 
 // SetApiEndpoint set api Endpoint
@@ -492,52 +545,16 @@ func (c *WsClient) NewPingService() *WsPingService {
 	return &WsPingService{c: c}
 }
 
-// WsPingService ping server
-type WsPingService struct {
-	c *WsClient
-}
-
-// Do send wsRequest
-func (s *WsPingService) Do(ctx context.Context) (err error) {
-	r := &wsRequest{
-		method: "ping",
-	}
-	_, err = s.c.callAPI(ctx, r)
-	return err
-}
-
 // NewServerTimeService init server time service
 func (c *WsClient) NewServerTimeService() *WsServerTimeService {
 	return &WsServerTimeService{c: c}
 }
 
-// WsServerTimeService get server time
-type WsServerTimeService struct {
-	c *WsClient
+// NewDepthService init depth service
+func (c *WsClient) NewDepthService() *WsDepthService {
+	return &WsDepthService{c: c}
 }
 
-// Do send request
-func (s *WsServerTimeService) Do(ctx context.Context) (serverTime int64, err error) {
-	r := &wsRequest{
-		method: "time",
-	}
-	data, err := s.c.callAPI(ctx, r)
-	if err != nil {
-		return 0, err
-	}
-	j, err := newJSON(data)
-	if err != nil {
-		return 0, err
-	}
-	serverTime = j.Get("serverTime").MustInt64()
-	return serverTime, nil
-}
-
-//// NewDepthService init depth service
-//func (c *WsClient) NewDepthService() *DepthService {
-//	return &DepthService{c: c}
-//}
-//
 //// NewAggTradesService init aggregate trades service
 //func (c *WsClient) NewAggTradesService() *AggTradesService {
 //	return &AggTradesService{c: c}
@@ -617,11 +634,12 @@ func (s *WsServerTimeService) Do(ctx context.Context) (serverTime int64, err err
 //func (c *WsClient) NewListOrdersService() *ListOrdersService {
 //	return &ListOrdersService{c: c}
 //}
-//
-//// NewGetAccountService init getting account service
-//func (c *WsClient) NewGetAccountService() *GetAccountService {
-//	return &GetAccountService{c: c}
-//}
+
+// NewGetAccountService init getting account service
+func (c *WsClient) NewGetAccountService() *WsGetAccountService {
+	return &WsGetAccountService{c: c}
+}
+
 //
 //// NewGetAPIKeyPermission init getting API key permission
 //func (c *WsClient) NewGetAPIKeyPermission() *GetAPIKeyPermission {

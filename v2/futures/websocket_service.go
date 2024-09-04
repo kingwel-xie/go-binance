@@ -1030,6 +1030,22 @@ type WsUserDataEvent struct {
 	AccountConfigUpdate WsAccountConfigUpdate `json:"ac"`
 }
 
+type T2 struct {
+	E  string `json:"e"`
+	E1 int64  `json:"E"`
+	T  int64  `json:"T"`
+	S  string `json:"s"`
+	Q  string `json:"q"`
+	P  string `json:"p"`
+	M  bool   `json:"m"`
+	C  string `json:"c"`
+	S1 string `json:"S"`
+	L  string `json:"L"`
+	L1 string `json:"l"`
+	T1 int    `json:"t"`
+	I  int64  `json:"i"`
+}
+
 // WsAccountUpdate define account update
 type WsAccountUpdate struct {
 	Reason    UserDataEventReasonType `json:"m"`
