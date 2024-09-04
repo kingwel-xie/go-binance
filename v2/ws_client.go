@@ -8,9 +8,7 @@ import (
 	"github.com/adshao/go-binance/v2/common"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -235,31 +233,6 @@ func getWsAPIEndpoint() string {
 	return WsAPIMainURL
 }
 
-// NewWsClient initialize an WS-API client instance with API key and secret key.
-// You should always call this function before using this SDK.
-// Services will be created by the form client.NewXXXService().
-func NewWsClient(apiKey, secretKey string) *WsClient {
-	c, stopC, disconnectedC := makeConn()
-	if c == nil {
-		return nil
-	}
-
-	client := &WsClient{
-		APIKey:    apiKey,
-		SecretKey: secretKey,
-		BaseURL:   getWsAPIEndpoint(),
-		UserAgent: "Binance/golang",
-		Conn:      c,
-		Logger:    log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
-		StopC:     stopC,
-		state:     WsConnected,
-	}
-
-	client.handleDisconnected(disconnectedC)
-
-	return client
-}
-
 func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 	Dialer := websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
@@ -322,34 +295,16 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 	return c, stopC, disconnectedC
 }
 
-//type doFunc func(req *http.Request) (*http.Response, error)
-
-// WsClient define API client
-type WsClient struct {
-	APIKey     string
-	SecretKey  string
-	BaseURL    string
-	UserAgent  string
-	Conn       *websocket.Conn
-	Debug      bool
-	Logger     *log.Logger
-	TimeOffset int64
-	do         doFunc
-	StopC      chan struct{}
-
-	state WsClientState // init/connecting/connected
-}
-
-func (c *WsClient) handleDisconnected(ch chan struct{}) {
+func (c *Client) handleDisconnected(ch chan struct{}) {
 	go func() {
 		select {
 		case <-ch:
 		}
 		// if it is triggered by AdminClose, just ignore
-		if c.state == WsAdminClosing {
+		if c.wsState == WsAdminClosing {
 			return
 		}
-		c.state = WsConnecting
+		c.wsState = WsConnecting
 		c.debug("disconnected, try reconnecting later...")
 
 		ticker := time.NewTicker(10 * time.Second)
@@ -367,7 +322,7 @@ func (c *WsClient) handleDisconnected(ch chan struct{}) {
 				if conn != nil {
 					c.Conn = conn
 					c.StopC = stopC
-					c.state = WsConnected
+					c.wsState = WsConnected
 					// well done, break the loop
 					c.handleDisconnected(disconnectedC)
 
@@ -380,14 +335,8 @@ func (c *WsClient) handleDisconnected(ch chan struct{}) {
 	}()
 }
 
-func (c *WsClient) debug(format string, v ...interface{}) {
-	if c.Debug {
-		c.Logger.Printf(format, v...)
-	}
-}
-
-func (c *WsClient) Close() {
-	c.state = WsAdminClosing
+func (c *Client) Close() {
+	c.wsState = WsAdminClosing
 	close(c.StopC)
 }
 
@@ -451,7 +400,7 @@ func (v params) Encode() string {
 	return buf.String()
 }
 
-func (c *WsClient) parseRequest(r *wsRequest) (err error) {
+func (c *Client) parseWsRequest(r *wsRequest) (err error) {
 	if r.recvWindow > 0 {
 		r.setParam(recvWindowKey, r.recvWindow)
 	}
@@ -472,13 +421,13 @@ func (c *WsClient) parseRequest(r *wsRequest) (err error) {
 	return nil
 }
 
-func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) ([]byte, error) {
+func (c *Client) callWsAPI(ctx context.Context, r *wsRequest) ([]byte, error) {
 	// check client state
-	if c.state != WsConnected {
+	if c.wsState != WsConnected {
 		return []byte{}, fmt.Errorf("not connected")
 	}
 
-	err := c.parseRequest(r)
+	err := c.parseWsRequest(r)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -533,755 +482,749 @@ func (c *WsClient) callAPI(ctx context.Context, r *wsRequest) ([]byte, error) {
 	}
 }
 
-// SetApiEndpoint set api Endpoint
-func (c *WsClient) SetApiEndpoint(url string) *WsClient {
-	c.BaseURL = url
-	return c
-}
-
-// NewPingService init ping service
-func (c *WsClient) NewPingService() *WsPingService {
+// NewWsPingService init ping service
+func (c *Client) NewWsPingService() *WsPingService {
 	return &WsPingService{c: c}
 }
 
-// NewServerTimeService init server time service
-func (c *WsClient) NewServerTimeService() *WsServerTimeService {
+// NewWsServerTimeService init server time service
+func (c *Client) NewWsServerTimeService() *WsServerTimeService {
 	return &WsServerTimeService{c: c}
 }
 
-// NewDepthService init depth service
-func (c *WsClient) NewDepthService() *WsDepthService {
+// NewWsDepthService init depth service
+func (c *Client) NewWsDepthService() *WsDepthService {
 	return &WsDepthService{c: c}
 }
 
 //// NewAggTradesService init aggregate trades service
-//func (c *WsClient) NewAggTradesService() *AggTradesService {
+//func (c *Client) NewAggTradesService() *AggTradesService {
 //	return &AggTradesService{c: c}
 //}
 //
 //// NewRecentTradesService init recent trades service
-//func (c *WsClient) NewRecentTradesService() *RecentTradesService {
+//func (c *Client) NewRecentTradesService() *RecentTradesService {
 //	return &RecentTradesService{c: c}
 //}
 //
 //// NewKlinesService init klines service
-//func (c *WsClient) NewKlinesService() *KlinesService {
+//func (c *Client) NewKlinesService() *KlinesService {
 //	return &KlinesService{c: c}
 //}
 //
 //// NewListPriceChangeStatsService init list prices change stats service
-//func (c *WsClient) NewListPriceChangeStatsService() *ListPriceChangeStatsService {
+//func (c *Client) NewListPriceChangeStatsService() *ListPriceChangeStatsService {
 //	return &ListPriceChangeStatsService{c: c}
 //}
 //
 //// NewListPricesService init listing prices service
-//func (c *WsClient) NewListPricesService() *ListPricesService {
+//func (c *Client) NewListPricesService() *ListPricesService {
 //	return &ListPricesService{c: c}
 //}
 //
 //// NewListBookTickersService init listing booking tickers service
-//func (c *WsClient) NewListBookTickersService() *ListBookTickersService {
+//func (c *Client) NewListBookTickersService() *ListBookTickersService {
 //	return &ListBookTickersService{c: c}
 //}
 //
 //// NewListSymbolTickerService init listing symbols tickers
-//func (c *WsClient) NewListSymbolTickerService() *ListSymbolTickerService {
+//func (c *Client) NewListSymbolTickerService() *ListSymbolTickerService {
 //	return &ListSymbolTickerService{c: c}
 //}
 //
 //// NewCreateOrderService init creating order service
-//func (c *WsClient) NewCreateOrderService() *CreateOrderService {
+//func (c *Client) NewCreateOrderService() *CreateOrderService {
 //	return &CreateOrderService{c: c}
 //}
 //
 //// NewCreateOCOService init creating OCO service
-//func (c *WsClient) NewCreateOCOService() *CreateOCOService {
+//func (c *Client) NewCreateOCOService() *CreateOCOService {
 //	return &CreateOCOService{c: c}
 //}
 //
 //// NewCancelOCOService init cancel OCO service
-//func (c *WsClient) NewCancelOCOService() *CancelOCOService {
+//func (c *Client) NewCancelOCOService() *CancelOCOService {
 //	return &CancelOCOService{c: c}
 //}
 //
 //// NewGetOrderService init get order service
-//func (c *WsClient) NewGetOrderService() *GetOrderService {
+//func (c *Client) NewGetOrderService() *GetOrderService {
 //	return &GetOrderService{c: c}
 //}
 //
 //// NewCancelOrderService init cancel order service
-//func (c *WsClient) NewCancelOrderService() *CancelOrderService {
+//func (c *Client) NewCancelOrderService() *CancelOrderService {
 //	return &CancelOrderService{c: c}
 //}
 //
 //// NewCancelOpenOrdersService init cancel open orders service
-//func (c *WsClient) NewCancelOpenOrdersService() *CancelOpenOrdersService {
+//func (c *Client) NewCancelOpenOrdersService() *CancelOpenOrdersService {
 //	return &CancelOpenOrdersService{c: c}
 //}
 //
 //// NewListOpenOrdersService init list open orders service
-//func (c *WsClient) NewListOpenOrdersService() *ListOpenOrdersService {
+//func (c *Client) NewListOpenOrdersService() *ListOpenOrdersService {
 //	return &ListOpenOrdersService{c: c}
 //}
 //
 //// NewListOpenOrderService init list open order service
-//func (c *WsClient) NewListOpenOrderService() *ListOpenOrderService {
+//func (c *Client) NewListOpenOrderService() *ListOpenOrderService {
 //	return &ListOpenOrderService{c: c}
 //}
 //
 //// NewListOrdersService init listing orders service
-//func (c *WsClient) NewListOrdersService() *ListOrdersService {
+//func (c *Client) NewListOrdersService() *ListOrdersService {
 //	return &ListOrdersService{c: c}
 //}
 
-// NewGetAccountService init getting account service
-func (c *WsClient) NewGetAccountService() *WsGetAccountService {
+// NewWsGetAccountService init getting account service
+func (c *Client) NewWsGetAccountService() *WsGetAccountService {
 	return &WsGetAccountService{c: c}
 }
 
 //
 //// NewGetAPIKeyPermission init getting API key permission
-//func (c *WsClient) NewGetAPIKeyPermission() *GetAPIKeyPermission {
+//func (c *Client) NewGetAPIKeyPermission() *GetAPIKeyPermission {
 //	return &GetAPIKeyPermission{c: c}
 //}
 //
 //// NewSavingFlexibleProductPositionsService get flexible products positions (Savings)
-//func (c *WsClient) NewSavingFlexibleProductPositionsService() *SavingFlexibleProductPositionsService {
+//func (c *Client) NewSavingFlexibleProductPositionsService() *SavingFlexibleProductPositionsService {
 //	return &SavingFlexibleProductPositionsService{c: c}
 //}
 //
 //// NewSavingFixedProjectPositionsService get fixed project positions (Savings)
-//func (c *WsClient) NewSavingFixedProjectPositionsService() *SavingFixedProjectPositionsService {
+//func (c *Client) NewSavingFixedProjectPositionsService() *SavingFixedProjectPositionsService {
 //	return &SavingFixedProjectPositionsService{c: c}
 //}
 //
 //// NewListSavingsFlexibleProductsService get flexible products list (Savings)
-//func (c *WsClient) NewListSavingsFlexibleProductsService() *ListSavingsFlexibleProductsService {
+//func (c *Client) NewListSavingsFlexibleProductsService() *ListSavingsFlexibleProductsService {
 //	return &ListSavingsFlexibleProductsService{c: c}
 //}
 //
 //// NewPurchaseSavingsFlexibleProductService purchase a flexible product (Savings)
-//func (c *WsClient) NewPurchaseSavingsFlexibleProductService() *PurchaseSavingsFlexibleProductService {
+//func (c *Client) NewPurchaseSavingsFlexibleProductService() *PurchaseSavingsFlexibleProductService {
 //	return &PurchaseSavingsFlexibleProductService{c: c}
 //}
 //
 //// NewRedeemSavingsFlexibleProductService redeem a flexible product (Savings)
-//func (c *WsClient) NewRedeemSavingsFlexibleProductService() *RedeemSavingsFlexibleProductService {
+//func (c *Client) NewRedeemSavingsFlexibleProductService() *RedeemSavingsFlexibleProductService {
 //	return &RedeemSavingsFlexibleProductService{c: c}
 //}
 //
 //// NewListSavingsFixedAndActivityProductsService get fixed and activity product list (Savings)
-//func (c *WsClient) NewListSavingsFixedAndActivityProductsService() *ListSavingsFixedAndActivityProductsService {
+//func (c *Client) NewListSavingsFixedAndActivityProductsService() *ListSavingsFixedAndActivityProductsService {
 //	return &ListSavingsFixedAndActivityProductsService{c: c}
 //}
 //
 //// NewGetAccountSnapshotService init getting account snapshot service
-//func (c *WsClient) NewGetAccountSnapshotService() *GetAccountSnapshotService {
+//func (c *Client) NewGetAccountSnapshotService() *GetAccountSnapshotService {
 //	return &GetAccountSnapshotService{c: c}
 //}
 //
 //// NewListTradesService init listing trades service
-//func (c *WsClient) NewListTradesService() *ListTradesService {
+//func (c *Client) NewListTradesService() *ListTradesService {
 //	return &ListTradesService{c: c}
 //}
 //
 //// NewHistoricalTradesService init listing trades service
-//func (c *WsClient) NewHistoricalTradesService() *HistoricalTradesService {
+//func (c *Client) NewHistoricalTradesService() *HistoricalTradesService {
 //	return &HistoricalTradesService{c: c}
 //}
 //
 //// NewListDepositsService init listing deposits service
-//func (c *WsClient) NewListDepositsService() *ListDepositsService {
+//func (c *Client) NewListDepositsService() *ListDepositsService {
 //	return &ListDepositsService{c: c}
 //}
 //
 //// NewGetDepositAddressService init getting deposit address service
-//func (c *WsClient) NewGetDepositAddressService() *GetDepositsAddressService {
+//func (c *Client) NewGetDepositAddressService() *GetDepositsAddressService {
 //	return &GetDepositsAddressService{c: c}
 //}
 //
 //// NewCreateWithdrawService init creating withdraw service
-//func (c *WsClient) NewCreateWithdrawService() *CreateWithdrawService {
+//func (c *Client) NewCreateWithdrawService() *CreateWithdrawService {
 //	return &CreateWithdrawService{c: c}
 //}
 //
 //// NewListWithdrawsService init listing withdraw service
-//func (c *WsClient) NewListWithdrawsService() *ListWithdrawsService {
+//func (c *Client) NewListWithdrawsService() *ListWithdrawsService {
 //	return &ListWithdrawsService{c: c}
 //}
 //
 //// NewStartUserStreamService init starting user stream service
-//func (c *WsClient) NewStartUserStreamService() *StartUserStreamService {
+//func (c *Client) NewStartUserStreamService() *StartUserStreamService {
 //	return &StartUserStreamService{c: c}
 //}
 //
 //// NewKeepaliveUserStreamService init keep alive user stream service
-//func (c *WsClient) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
+//func (c *Client) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
 //	return &KeepaliveUserStreamService{c: c}
 //}
 //
 //// NewCloseUserStreamService init closing user stream service
-//func (c *WsClient) NewCloseUserStreamService() *CloseUserStreamService {
+//func (c *Client) NewCloseUserStreamService() *CloseUserStreamService {
 //	return &CloseUserStreamService{c: c}
 //}
 //
 //// NewExchangeInfoService init exchange info service
-//func (c *WsClient) NewExchangeInfoService() *ExchangeInfoService {
+//func (c *Client) NewExchangeInfoService() *ExchangeInfoService {
 //	return &ExchangeInfoService{c: c}
 //}
 //
 //// NewRateLimitService init rate limit service
-//func (c *WsClient) NewRateLimitService() *RateLimitService {
+//func (c *Client) NewRateLimitService() *RateLimitService {
 //	return &RateLimitService{c: c}
 //}
 //
 //// NewGetAssetDetailService init get asset detail service
-//func (c *WsClient) NewGetAssetDetailService() *GetAssetDetailService {
+//func (c *Client) NewGetAssetDetailService() *GetAssetDetailService {
 //	return &GetAssetDetailService{c: c}
 //}
 //
 //// NewAveragePriceService init average price service
-//func (c *WsClient) NewAveragePriceService() *AveragePriceService {
+//func (c *Client) NewAveragePriceService() *AveragePriceService {
 //	return &AveragePriceService{c: c}
 //}
 //
 //// NewMarginTransferService init margin account transfer service
-//func (c *WsClient) NewMarginTransferService() *MarginTransferService {
+//func (c *Client) NewMarginTransferService() *MarginTransferService {
 //	return &MarginTransferService{c: c}
 //}
 //
 //// NewMarginLoanService init margin account loan service
-//func (c *WsClient) NewMarginLoanService() *MarginLoanService {
+//func (c *Client) NewMarginLoanService() *MarginLoanService {
 //	return &MarginLoanService{c: c}
 //}
 //
 //// NewMarginRepayService init margin account repay service
-//func (c *WsClient) NewMarginRepayService() *MarginRepayService {
+//func (c *Client) NewMarginRepayService() *MarginRepayService {
 //	return &MarginRepayService{c: c}
 //}
 //
 //// NewCreateMarginOrderService init creating margin order service
-//func (c *WsClient) NewCreateMarginOrderService() *CreateMarginOrderService {
+//func (c *Client) NewCreateMarginOrderService() *CreateMarginOrderService {
 //	return &CreateMarginOrderService{c: c}
 //}
 //
 //// NewCancelMarginOrderService init cancel order service
-//func (c *WsClient) NewCancelMarginOrderService() *CancelMarginOrderService {
+//func (c *Client) NewCancelMarginOrderService() *CancelMarginOrderService {
 //	return &CancelMarginOrderService{c: c}
 //}
 //
 //// NewCreateMarginOCOService init creating margin order service
-//func (c *WsClient) NewCreateMarginOCOService() *CreateMarginOCOService {
+//func (c *Client) NewCreateMarginOCOService() *CreateMarginOCOService {
 //	return &CreateMarginOCOService{c: c}
 //}
 //
 //// NewCancelMarginOCOService init cancel order service
-//func (c *WsClient) NewCancelMarginOCOService() *CancelMarginOCOService {
+//func (c *Client) NewCancelMarginOCOService() *CancelMarginOCOService {
 //	return &CancelMarginOCOService{c: c}
 //}
 //
 //// NewGetMarginOrderService init get order service
-//func (c *WsClient) NewGetMarginOrderService() *GetMarginOrderService {
+//func (c *Client) NewGetMarginOrderService() *GetMarginOrderService {
 //	return &GetMarginOrderService{c: c}
 //}
 //
 //// NewListMarginLoansService init list margin loan service
-//func (c *WsClient) NewListMarginLoansService() *ListMarginLoansService {
+//func (c *Client) NewListMarginLoansService() *ListMarginLoansService {
 //	return &ListMarginLoansService{c: c}
 //}
 //
 //// NewListMarginRepaysService init list margin repay service
-//func (c *WsClient) NewListMarginRepaysService() *ListMarginRepaysService {
+//func (c *Client) NewListMarginRepaysService() *ListMarginRepaysService {
 //	return &ListMarginRepaysService{c: c}
 //}
 //
 //// NewGetMarginAccountService init get margin account service
-//func (c *WsClient) NewGetMarginAccountService() *GetMarginAccountService {
+//func (c *Client) NewGetMarginAccountService() *GetMarginAccountService {
 //	return &GetMarginAccountService{c: c}
 //}
 //
 //// NewGetIsolatedMarginAccountService init get isolated margin asset service
-//func (c *WsClient) NewGetIsolatedMarginAccountService() *GetIsolatedMarginAccountService {
+//func (c *Client) NewGetIsolatedMarginAccountService() *GetIsolatedMarginAccountService {
 //	return &GetIsolatedMarginAccountService{c: c}
 //}
 //
-//func (c *WsClient) NewIsolatedMarginTransferService() *IsolatedMarginTransferService {
+//func (c *Client) NewIsolatedMarginTransferService() *IsolatedMarginTransferService {
 //	return &IsolatedMarginTransferService{c: c}
 //}
 //
 //// NewGetMarginAssetService init get margin asset service
-//func (c *WsClient) NewGetMarginAssetService() *GetMarginAssetService {
+//func (c *Client) NewGetMarginAssetService() *GetMarginAssetService {
 //	return &GetMarginAssetService{c: c}
 //}
 //
 //// NewGetMarginPairService init get margin pair service
-//func (c *WsClient) NewGetMarginPairService() *GetMarginPairService {
+//func (c *Client) NewGetMarginPairService() *GetMarginPairService {
 //	return &GetMarginPairService{c: c}
 //}
 //
 //// NewGetMarginAllPairsService init get margin all pairs service
-//func (c *WsClient) NewGetMarginAllPairsService() *GetMarginAllPairsService {
+//func (c *Client) NewGetMarginAllPairsService() *GetMarginAllPairsService {
 //	return &GetMarginAllPairsService{c: c}
 //}
 //
 //// NewGetMarginPriceIndexService init get margin price index service
-//func (c *WsClient) NewGetMarginPriceIndexService() *GetMarginPriceIndexService {
+//func (c *Client) NewGetMarginPriceIndexService() *GetMarginPriceIndexService {
 //	return &GetMarginPriceIndexService{c: c}
 //}
 //
 //// NewListMarginOpenOrdersService init list margin open orders service
-//func (c *WsClient) NewListMarginOpenOrdersService() *ListMarginOpenOrdersService {
+//func (c *Client) NewListMarginOpenOrdersService() *ListMarginOpenOrdersService {
 //	return &ListMarginOpenOrdersService{c: c}
 //}
 //
 //// NewListMarginOrdersService init list margin all orders service
-//func (c *WsClient) NewListMarginOrdersService() *ListMarginOrdersService {
+//func (c *Client) NewListMarginOrdersService() *ListMarginOrdersService {
 //	return &ListMarginOrdersService{c: c}
 //}
 //
 //// NewListMarginTradesService init list margin trades service
-//func (c *WsClient) NewListMarginTradesService() *ListMarginTradesService {
+//func (c *Client) NewListMarginTradesService() *ListMarginTradesService {
 //	return &ListMarginTradesService{c: c}
 //}
 //
 //// NewGetMaxBorrowableService init get max borrowable service
-//func (c *WsClient) NewGetMaxBorrowableService() *GetMaxBorrowableService {
+//func (c *Client) NewGetMaxBorrowableService() *GetMaxBorrowableService {
 //	return &GetMaxBorrowableService{c: c}
 //}
 //
 //// NewGetMaxTransferableService init get max transferable service
-//func (c *WsClient) NewGetMaxTransferableService() *GetMaxTransferableService {
+//func (c *Client) NewGetMaxTransferableService() *GetMaxTransferableService {
 //	return &GetMaxTransferableService{c: c}
 //}
 //
 //// NewStartMarginUserStreamService init starting margin user stream service
-//func (c *WsClient) NewStartMarginUserStreamService() *StartMarginUserStreamService {
+//func (c *Client) NewStartMarginUserStreamService() *StartMarginUserStreamService {
 //	return &StartMarginUserStreamService{c: c}
 //}
 //
 //// NewKeepaliveMarginUserStreamService init keep alive margin user stream service
-//func (c *WsClient) NewKeepaliveMarginUserStreamService() *KeepaliveMarginUserStreamService {
+//func (c *Client) NewKeepaliveMarginUserStreamService() *KeepaliveMarginUserStreamService {
 //	return &KeepaliveMarginUserStreamService{c: c}
 //}
 //
 //// NewCloseMarginUserStreamService init closing margin user stream service
-//func (c *WsClient) NewCloseMarginUserStreamService() *CloseMarginUserStreamService {
+//func (c *Client) NewCloseMarginUserStreamService() *CloseMarginUserStreamService {
 //	return &CloseMarginUserStreamService{c: c}
 //}
 //
 //// NewStartIsolatedMarginUserStreamService init starting margin user stream service
-//func (c *WsClient) NewStartIsolatedMarginUserStreamService() *StartIsolatedMarginUserStreamService {
+//func (c *Client) NewStartIsolatedMarginUserStreamService() *StartIsolatedMarginUserStreamService {
 //	return &StartIsolatedMarginUserStreamService{c: c}
 //}
 //
 //// NewKeepaliveIsolatedMarginUserStreamService init keep alive margin user stream service
-//func (c *WsClient) NewKeepaliveIsolatedMarginUserStreamService() *KeepaliveIsolatedMarginUserStreamService {
+//func (c *Client) NewKeepaliveIsolatedMarginUserStreamService() *KeepaliveIsolatedMarginUserStreamService {
 //	return &KeepaliveIsolatedMarginUserStreamService{c: c}
 //}
 //
 //// NewCloseIsolatedMarginUserStreamService init closing margin user stream service
-//func (c *WsClient) NewCloseIsolatedMarginUserStreamService() *CloseIsolatedMarginUserStreamService {
+//func (c *Client) NewCloseIsolatedMarginUserStreamService() *CloseIsolatedMarginUserStreamService {
 //	return &CloseIsolatedMarginUserStreamService{c: c}
 //}
 //
 //// NewFuturesTransferService init futures transfer service
-//func (c *WsClient) NewFuturesTransferService() *FuturesTransferService {
+//func (c *Client) NewFuturesTransferService() *FuturesTransferService {
 //	return &FuturesTransferService{c: c}
 //}
 //
 //// NewListFuturesTransferService init list futures transfer service
-//func (c *WsClient) NewListFuturesTransferService() *ListFuturesTransferService {
+//func (c *Client) NewListFuturesTransferService() *ListFuturesTransferService {
 //	return &ListFuturesTransferService{c: c}
 //}
 //
 //// NewListDustLogService init list dust log service
-//func (c *WsClient) NewListDustLogService() *ListDustLogService {
+//func (c *Client) NewListDustLogService() *ListDustLogService {
 //	return &ListDustLogService{c: c}
 //}
 //
 //// NewDustTransferService init dust transfer service
-//func (c *WsClient) NewDustTransferService() *DustTransferService {
+//func (c *Client) NewDustTransferService() *DustTransferService {
 //	return &DustTransferService{c: c}
 //}
 //
 //// NewListDustService init dust list service
-//func (c *WsClient) NewListDustService() *ListDustService {
+//func (c *Client) NewListDustService() *ListDustService {
 //	return &ListDustService{c: c}
 //}
 //
 //// NewTransferToSubAccountService transfer to subaccount service
-//func (c *WsClient) NewTransferToSubAccountService() *TransferToSubAccountService {
+//func (c *Client) NewTransferToSubAccountService() *TransferToSubAccountService {
 //	return &TransferToSubAccountService{c: c}
 //}
 //
 //// NewSubaccountAssetsService init list subaccount assets
-//func (c *WsClient) NewSubaccountAssetsService() *SubaccountAssetsService {
+//func (c *Client) NewSubaccountAssetsService() *SubaccountAssetsService {
 //	return &SubaccountAssetsService{c: c}
 //}
 //
 //// NewSubaccountSpotSummaryService init subaccount spot summary
-//func (c *WsClient) NewSubaccountSpotSummaryService() *SubaccountSpotSummaryService {
+//func (c *Client) NewSubaccountSpotSummaryService() *SubaccountSpotSummaryService {
 //	return &SubaccountSpotSummaryService{c: c}
 //}
 //
 //// NewSubaccountDepositAddressService init subaccount deposit address service
-//func (c *WsClient) NewSubaccountDepositAddressService() *SubaccountDepositAddressService {
+//func (c *Client) NewSubaccountDepositAddressService() *SubaccountDepositAddressService {
 //	return &SubaccountDepositAddressService{c: c}
 //}
 //
 //// NewSubAccountFuturesPositionRiskService init subaccount futures position risk service
-//func (c *WsClient) NewSubAccountFuturesPositionRiskService() *SubAccountFuturesPositionRiskService {
+//func (c *Client) NewSubAccountFuturesPositionRiskService() *SubAccountFuturesPositionRiskService {
 //	return &SubAccountFuturesPositionRiskService{c: c}
 //}
 //
 //// NewAssetDividendService init the asset dividend list service
-//func (c *WsClient) NewAssetDividendService() *AssetDividendService {
+//func (c *Client) NewAssetDividendService() *AssetDividendService {
 //	return &AssetDividendService{c: c}
 //}
 //
 //// NewUserUniversalTransferService
-//func (c *WsClient) NewUserUniversalTransferService() *CreateUserUniversalTransferService {
+//func (c *Client) NewUserUniversalTransferService() *CreateUserUniversalTransferService {
 //	return &CreateUserUniversalTransferService{c: c}
 //}
 //
 //// NewAllCoinsInformation
-//func (c *WsClient) NewGetAllCoinsInfoService() *GetAllCoinsInfoService {
+//func (c *Client) NewGetAllCoinsInfoService() *GetAllCoinsInfoService {
 //	return &GetAllCoinsInfoService{c: c}
 //}
 //
 //// NewDustTransferService init Get All Margin Assets service
-//func (c *WsClient) NewGetAllMarginAssetsService() *GetAllMarginAssetsService {
+//func (c *Client) NewGetAllMarginAssetsService() *GetAllMarginAssetsService {
 //	return &GetAllMarginAssetsService{c: c}
 //}
 //
 //// NewFiatDepositWithdrawHistoryService init the fiat deposit/withdraw history service
-//func (c *WsClient) NewFiatDepositWithdrawHistoryService() *FiatDepositWithdrawHistoryService {
+//func (c *Client) NewFiatDepositWithdrawHistoryService() *FiatDepositWithdrawHistoryService {
 //	return &FiatDepositWithdrawHistoryService{c: c}
 //}
 //
 //// NewFiatPaymentsHistoryService init the fiat payments history service
-//func (c *WsClient) NewFiatPaymentsHistoryService() *FiatPaymentsHistoryService {
+//func (c *Client) NewFiatPaymentsHistoryService() *FiatPaymentsHistoryService {
 //	return &FiatPaymentsHistoryService{c: c}
 //}
 //
 //// NewPayTransactionService init the pay transaction service
-//func (c *WsClient) NewPayTradeHistoryService() *PayTradeHistoryService {
+//func (c *Client) NewPayTradeHistoryService() *PayTradeHistoryService {
 //	return &PayTradeHistoryService{c: c}
 //}
 //
 //// NewFiatPaymentsHistoryService init the spot rebate history service
-//func (c *WsClient) NewSpotRebateHistoryService() *SpotRebateHistoryService {
+//func (c *Client) NewSpotRebateHistoryService() *SpotRebateHistoryService {
 //	return &SpotRebateHistoryService{c: c}
 //}
 //
 //// NewConvertTradeHistoryService init the convert trade history service
-//func (c *WsClient) NewConvertTradeHistoryService() *ConvertTradeHistoryService {
+//func (c *Client) NewConvertTradeHistoryService() *ConvertTradeHistoryService {
 //	return &ConvertTradeHistoryService{c: c}
 //}
 //
 //// NewGetIsolatedMarginAllPairsService init get isolated margin all pairs service
-//func (c *WsClient) NewGetIsolatedMarginAllPairsService() *GetIsolatedMarginAllPairsService {
+//func (c *Client) NewGetIsolatedMarginAllPairsService() *GetIsolatedMarginAllPairsService {
 //	return &GetIsolatedMarginAllPairsService{c: c}
 //}
 //
 //// NewInterestHistoryService init the interest history service
-//func (c *WsClient) NewInterestHistoryService() *InterestHistoryService {
+//func (c *Client) NewInterestHistoryService() *InterestHistoryService {
 //	return &InterestHistoryService{c: c}
 //}
 //
 //// NewTradeFeeService init the trade fee service
-//func (c *WsClient) NewTradeFeeService() *TradeFeeService {
+//func (c *Client) NewTradeFeeService() *TradeFeeService {
 //	return &TradeFeeService{c: c}
 //}
 //
 //// NewC2CTradeHistoryService init the c2c trade history service
-//func (c *WsClient) NewC2CTradeHistoryService() *C2CTradeHistoryService {
+//func (c *Client) NewC2CTradeHistoryService() *C2CTradeHistoryService {
 //	return &C2CTradeHistoryService{c: c}
 //}
 //
 //// NewStakingProductPositionService init the staking product position service
-//func (c *WsClient) NewStakingProductPositionService() *StakingProductPositionService {
+//func (c *Client) NewStakingProductPositionService() *StakingProductPositionService {
 //	return &StakingProductPositionService{c: c}
 //}
 //
 //// NewStakingHistoryService init the staking history service
-//func (c *WsClient) NewStakingHistoryService() *StakingHistoryService {
+//func (c *Client) NewStakingHistoryService() *StakingHistoryService {
 //	return &StakingHistoryService{c: c}
 //}
 //
 //// NewGetAllLiquidityPoolService init the get all swap pool service
-//func (c *WsClient) NewGetAllLiquidityPoolService() *GetAllLiquidityPoolService {
+//func (c *Client) NewGetAllLiquidityPoolService() *GetAllLiquidityPoolService {
 //	return &GetAllLiquidityPoolService{c: c}
 //}
 //
 //// NewGetLiquidityPoolDetailService init the get liquidity pool detial service
-//func (c *WsClient) NewGetLiquidityPoolDetailService() *GetLiquidityPoolDetailService {
+//func (c *Client) NewGetLiquidityPoolDetailService() *GetLiquidityPoolDetailService {
 //	return &GetLiquidityPoolDetailService{c: c}
 //}
 //
 //// NewAddLiquidityPreviewService init the add liquidity preview service
-//func (c *WsClient) NewAddLiquidityPreviewService() *AddLiquidityPreviewService {
+//func (c *Client) NewAddLiquidityPreviewService() *AddLiquidityPreviewService {
 //	return &AddLiquidityPreviewService{c: c}
 //}
 //
 //// NewGetSwapQuoteService init the add liquidity preview service
-//func (c *WsClient) NewGetSwapQuoteService() *GetSwapQuoteService {
+//func (c *Client) NewGetSwapQuoteService() *GetSwapQuoteService {
 //	return &GetSwapQuoteService{c: c}
 //}
 //
 //// NewSwapService init the swap service
-//func (c *WsClient) NewSwapService() *SwapService {
+//func (c *Client) NewSwapService() *SwapService {
 //	return &SwapService{c: c}
 //}
 //
 //// NewAddLiquidityService init the add liquidity service
-//func (c *WsClient) NewAddLiquidityService() *AddLiquidityService {
+//func (c *Client) NewAddLiquidityService() *AddLiquidityService {
 //	return &AddLiquidityService{c: c}
 //}
 //
 //// NewGetUserSwapRecordsService init the service for listing the swap records
-//func (c *WsClient) NewGetUserSwapRecordsService() *GetUserSwapRecordsService {
+//func (c *Client) NewGetUserSwapRecordsService() *GetUserSwapRecordsService {
 //	return &GetUserSwapRecordsService{c: c}
 //}
 //
 //// NewClaimRewardService init the service for liquidity pool rewarding
-//func (c *WsClient) NewClaimRewardService() *ClaimRewardService {
+//func (c *Client) NewClaimRewardService() *ClaimRewardService {
 //	return &ClaimRewardService{c: c}
 //}
 //
 //// NewRemoveLiquidityService init the service to remvoe liquidity
-//func (c *WsClient) NewRemoveLiquidityService() *RemoveLiquidityService {
+//func (c *Client) NewRemoveLiquidityService() *RemoveLiquidityService {
 //	return &RemoveLiquidityService{c: c, assets: []string{}}
 //}
 //
 //// NewQueryClaimedRewardHistoryService init the service to query reward claiming history
-//func (c *WsClient) NewQueryClaimedRewardHistoryService() *QueryClaimedRewardHistoryService {
+//func (c *Client) NewQueryClaimedRewardHistoryService() *QueryClaimedRewardHistoryService {
 //	return &QueryClaimedRewardHistoryService{c: c}
 //}
 //
 //// NewGetBNBBurnService init the service to get BNB Burn on spot trade and margin interest
-//func (c *WsClient) NewGetBNBBurnService() *GetBNBBurnService {
+//func (c *Client) NewGetBNBBurnService() *GetBNBBurnService {
 //	return &GetBNBBurnService{c: c}
 //}
 //
 //// NewToggleBNBBurnService init the service to toggle BNB Burn on spot trade and margin interest
-//func (c *WsClient) NewToggleBNBBurnService() *ToggleBNBBurnService {
+//func (c *Client) NewToggleBNBBurnService() *ToggleBNBBurnService {
 //	return &ToggleBNBBurnService{c: c}
 //}
 //
 //// NewInternalUniversalTransferService Universal Transfer (For Master Account)
-//func (c *WsClient) NewInternalUniversalTransferService() *InternalUniversalTransferService {
+//func (c *Client) NewInternalUniversalTransferService() *InternalUniversalTransferService {
 //	return &InternalUniversalTransferService{c: c}
 //}
 //
 //// NewInternalUniversalTransferHistoryService Query Universal Transfer History (For Master Account)
-//func (c *WsClient) NewInternalUniversalTransferHistoryService() *InternalUniversalTransferHistoryService {
+//func (c *Client) NewInternalUniversalTransferHistoryService() *InternalUniversalTransferHistoryService {
 //	return &InternalUniversalTransferHistoryService{c: c}
 //}
 //
 //// NewSubAccountListService Query Sub-account List (For Master Account)
-//func (c *WsClient) NewSubAccountListService() *SubAccountListService {
+//func (c *Client) NewSubAccountListService() *SubAccountListService {
 //	return &SubAccountListService{c: c}
 //}
 //
 //// NewGetUserAsset Get user assets, just for positive data
-//func (c *WsClient) NewGetUserAsset() *GetUserAssetService {
+//func (c *Client) NewGetUserAsset() *GetUserAssetService {
 //	return &GetUserAssetService{c: c}
 //}
 //
 //// NewManagedSubAccountDepositService Deposit Assets Into The Managed Sub-account（For Investor Master Account）
-//func (c *WsClient) NewManagedSubAccountDepositService() *ManagedSubAccountDepositService {
+//func (c *Client) NewManagedSubAccountDepositService() *ManagedSubAccountDepositService {
 //	return &ManagedSubAccountDepositService{c: c}
 //}
 //
 //// NewManagedSubAccountWithdrawalService Withdrawal Assets From The Managed Sub-account（For Investor Master Account）
-//func (c *WsClient) NewManagedSubAccountWithdrawalService() *ManagedSubAccountWithdrawalService {
+//func (c *Client) NewManagedSubAccountWithdrawalService() *ManagedSubAccountWithdrawalService {
 //	return &ManagedSubAccountWithdrawalService{c: c}
 //}
 //
 //// NewManagedSubAccountAssetsService Withdrawal Assets From The Managed Sub-account（For Investor Master Account）
-//func (c *WsClient) NewManagedSubAccountAssetsService() *ManagedSubAccountAssetsService {
+//func (c *Client) NewManagedSubAccountAssetsService() *ManagedSubAccountAssetsService {
 //	return &ManagedSubAccountAssetsService{c: c}
 //}
 //
 //// NewSubAccountFuturesAccountService Get Detail on Sub-account's Futures Account (For Master Account)
-//func (c *WsClient) NewSubAccountFuturesAccountService() *SubAccountFuturesAccountService {
+//func (c *Client) NewSubAccountFuturesAccountService() *SubAccountFuturesAccountService {
 //	return &SubAccountFuturesAccountService{c: c}
 //}
 //
 //// NewSubAccountFuturesSummaryV1Service Get Summary of Sub-account's Futures Account (For Master Account)
-//func (c *WsClient) NewSubAccountFuturesSummaryV1Service() *SubAccountFuturesSummaryV1Service {
+//func (c *Client) NewSubAccountFuturesSummaryV1Service() *SubAccountFuturesSummaryV1Service {
 //	return &SubAccountFuturesSummaryV1Service{c: c}
 //}
 //
 //// NewSimpleEarnAccountService init simple-earn account service
-//func (c *WsClient) NewSimpleEarnAccountService() *SimpleEarnAccountService {
+//func (c *Client) NewSimpleEarnAccountService() *SimpleEarnAccountService {
 //	return &SimpleEarnAccountService{c: c}
 //}
 //
 //// NewListSimpleEarnFlexibleService init listing simple-earn flexible service
-//func (c *WsClient) NewListSimpleEarnFlexibleService() *ListSimpleEarnFlexibleService {
+//func (c *Client) NewListSimpleEarnFlexibleService() *ListSimpleEarnFlexibleService {
 //	return &ListSimpleEarnFlexibleService{c: c}
 //}
 //
 //// NewListSimpleEarnLockedService init listing simple-earn locked service
-//func (c *WsClient) NewListSimpleEarnLockedService() *ListSimpleEarnLockedService {
+//func (c *Client) NewListSimpleEarnLockedService() *ListSimpleEarnLockedService {
 //	return &ListSimpleEarnLockedService{c: c}
 //}
 //
 //// NewSubscribeSimpleEarnFlexibleService subscribe to simple-earn flexible service
-//func (c *WsClient) NewSubscribeSimpleEarnFlexibleService() *SubscribeSimpleEarnFlexibleService {
+//func (c *Client) NewSubscribeSimpleEarnFlexibleService() *SubscribeSimpleEarnFlexibleService {
 //	return &SubscribeSimpleEarnFlexibleService{c: c}
 //}
 //
 //// NewSubscribeSimpleEarnLockedService subscribe to simple-earn locked service
-//func (c *WsClient) NewSubscribeSimpleEarnLockedService() *SubscribeSimpleEarnLockedService {
+//func (c *Client) NewSubscribeSimpleEarnLockedService() *SubscribeSimpleEarnLockedService {
 //	return &SubscribeSimpleEarnLockedService{c: c}
 //}
 //
 //// NewRedeemSimpleEarnFlexibleService redeem simple-earn flexible service
-//func (c *WsClient) NewRedeemSimpleEarnFlexibleService() *RedeemSimpleEarnFlexibleService {
+//func (c *Client) NewRedeemSimpleEarnFlexibleService() *RedeemSimpleEarnFlexibleService {
 //	return &RedeemSimpleEarnFlexibleService{c: c}
 //}
 //
 //// NewRedeemSimpleEarnLockedService redeem simple-earn locked service
-//func (c *WsClient) NewRedeemSimpleEarnLockedService() *RedeemSimpleEarnLockedService {
+//func (c *Client) NewRedeemSimpleEarnLockedService() *RedeemSimpleEarnLockedService {
 //	return &RedeemSimpleEarnLockedService{c: c}
 //}
 //
 //// NewGetSimpleEarnFlexiblePositionService returns simple-earn flexible position service
-//func (c *WsClient) NewGetSimpleEarnFlexiblePositionService() *GetSimpleEarnFlexiblePositionService {
+//func (c *Client) NewGetSimpleEarnFlexiblePositionService() *GetSimpleEarnFlexiblePositionService {
 //	return &GetSimpleEarnFlexiblePositionService{c: c}
 //}
 //
 //// NewListSimpleEarnFlexibleRateHistoryService returns simple-earn listing flexible rate history
-//func (c *WsClient) NewListSimpleEarnFlexibleRateHistoryService() *ListSimpleEarnFlexibleRateHistoryService {
+//func (c *Client) NewListSimpleEarnFlexibleRateHistoryService() *ListSimpleEarnFlexibleRateHistoryService {
 //	return &ListSimpleEarnFlexibleRateHistoryService{c: c}
 //}
 //
 //// NewGetSimpleEarnLockedPositionService returns simple-earn locked position service
-//func (c *WsClient) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
+//func (c *Client) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
 //	return &GetSimpleEarnLockedPositionService{c: c}
 //}
 //
 //// NewListLoanableCoinService returns crypto-loan list locked loanable data service
-//func (c *WsClient) NewListLoanableCoinService() *ListLoanableCoinService {
+//func (c *Client) NewListLoanableCoinService() *ListLoanableCoinService {
 //	return &ListLoanableCoinService{c: c}
 //}
 //
 //// NewListCollateralCoinService returns crypto-loan list locked collateral data service
-//func (c *WsClient) NewListCollateralCoinService() *ListCollateralCoinService {
+//func (c *Client) NewListCollateralCoinService() *ListCollateralCoinService {
 //	return &ListCollateralCoinService{c: c}
 //}
 //
 //// NewLoanBorrowLockedService returns crypto-loan locked borrow service
-//func (c *WsClient) NewLoanBorrowLockedService() *LoanBorrowLockedService {
+//func (c *Client) NewLoanBorrowLockedService() *LoanBorrowLockedService {
 //	return &LoanBorrowLockedService{c: c}
 //}
 //
 //// NewLoanRepayLockedService returns crypto-loan locked repay service
-//func (c *WsClient) NewLoanRepayLockedService() *LoanRepayLockedService {
+//func (c *Client) NewLoanRepayLockedService() *LoanRepayLockedService {
 //	return &LoanRepayLockedService{c: c}
 //}
 //
 //// NewListLoanableCoinFlexibleService returns crypto-loan list flexible loanable data service
-//func (c *WsClient) NewListLoanableCoinFlexibleService() *ListLoanableCoinFlexibleService {
+//func (c *Client) NewListLoanableCoinFlexibleService() *ListLoanableCoinFlexibleService {
 //	return &ListLoanableCoinFlexibleService{c: c}
 //}
 //
 //// NewListCollateralCoinFlexibleService returns crypto-loan list flexible collateral data service
-//func (c *WsClient) NewListCollateralCoinFlexibleService() *ListCollateralCoinFlexibleService {
+//func (c *Client) NewListCollateralCoinFlexibleService() *ListCollateralCoinFlexibleService {
 //	return &ListCollateralCoinFlexibleService{c: c}
 //}
 //
 //// NewLoanBorrowFlexibleService returns crypto-loan flexible borrow service
-//func (c *WsClient) NewLoanBorrowFlexibleService() *LoanBorrowFlexibleService {
+//func (c *Client) NewLoanBorrowFlexibleService() *LoanBorrowFlexibleService {
 //	return &LoanBorrowFlexibleService{c: c}
 //}
 //
 //// NewLoanRepayFlexibleService returns crypto-loan flexible repay service
-//func (c *WsClient) NewLoanRepayFlexibleService() *LoanRepayFlexibleService {
+//func (c *Client) NewLoanRepayFlexibleService() *LoanRepayFlexibleService {
 //	return &LoanRepayFlexibleService{c: c}
 //}
 //
 //// NewEthStakingAccountService returns eth-stake account service
-//func (c *WsClient) NewEthStakingAccountService() *EthStakingAccountService {
+//func (c *Client) NewEthStakingAccountService() *EthStakingAccountService {
 //	return &EthStakingAccountService{c: c}
 //}
 //
 //// NewEthStakingHistoryService returns eth-stake staking history service
-//func (c *WsClient) NewEthStakingHistoryService() *EthStakingHistoryService {
+//func (c *Client) NewEthStakingHistoryService() *EthStakingHistoryService {
 //	return &EthStakingHistoryService{c: c}
 //}
 //
 //// NewEthStakingRedemptionHistoryService returns eth-stake redemption history service
-//func (c *WsClient) NewEthStakingRedemptionHistoryService() *EthStakingRedemptionHistoryService {
+//func (c *Client) NewEthStakingRedemptionHistoryService() *EthStakingRedemptionHistoryService {
 //	return &EthStakingRedemptionHistoryService{c: c}
 //}
 //
 //// NewEthStakingRewardsHistoryService returns eth-stake rewards history service
-//func (c *WsClient) NewEthStakingRewardsHistoryService() *EthStakingRewardsHistoryService {
+//func (c *Client) NewEthStakingRewardsHistoryService() *EthStakingRewardsHistoryService {
 //	return &EthStakingRewardsHistoryService{c: c}
 //}
 //
 //// NewEthStakingService returns eth-stake staking service
-//func (c *WsClient) NewEthStakingService() *EthStakingService {
+//func (c *Client) NewEthStakingService() *EthStakingService {
 //	return &EthStakingService{c: c}
 //}
 //
 //// NewEthWrappingService returns eth-stake wrapping service
-//func (c *WsClient) NewEthWrappingService() *EthWrappingService {
+//func (c *Client) NewEthWrappingService() *EthWrappingService {
 //	return &EthWrappingService{c: c}
 //}
 //
 //// NewEthRedeemService returns eth-stake redeem service
-//func (c *WsClient) NewEthRedeemService() *EthRedeemService {
+//func (c *Client) NewEthRedeemService() *EthRedeemService {
 //	return &EthRedeemService{c: c}
 //}
 //
 //// NewGetFundingAssetService returns wallet get funding asset service
-//func (c *WsClient) NewGetFundingAssetService() *GetFundingAssetService {
+//func (c *Client) NewGetFundingAssetService() *GetFundingAssetService {
 //	return &GetFundingAssetService{c: c}
 //}
 //
 //// NewListLoanFlexibleService returns list crypto loan flexible order service
-//func (c *WsClient) NewListLoanFlexibleService() *ListLoanFlexibleService {
+//func (c *Client) NewListLoanFlexibleService() *ListLoanFlexibleService {
 //	return &ListLoanFlexibleService{c: c}
 //}
 //
 //// NewAdjustLtvLoanFlexibleService returns adjust crypto loan flexible LTV service
-//func (c *WsClient) NewAdjustLtvLoanFlexibleService() *AdjustLtvLoanFlexibleService {
+//func (c *Client) NewAdjustLtvLoanFlexibleService() *AdjustLtvLoanFlexibleService {
 //	return &AdjustLtvLoanFlexibleService{c: c}
 //}
 //
 //// NewListLoanLockedService returns list crypto loan locked order service
-//func (c *WsClient) NewListLoanLockedService() *ListLoanLockedService {
+//func (c *Client) NewListLoanLockedService() *ListLoanLockedService {
 //	return &ListLoanLockedService{c: c}
 //}
 //
 //// VIP Loan
 //
 //// NewListVipLoanableCoinService returns crypto-loan list vip loanable data service
-//func (c *WsClient) NewListVipLoanableCoinService() *ListVipLoanableCoinService {
+//func (c *Client) NewListVipLoanableCoinService() *ListVipLoanableCoinService {
 //	return &ListVipLoanableCoinService{c: c}
 //}
 //
 //// NewListVipCollateralCoinService returns crypto-loan list vip collateral data service
-//func (c *WsClient) NewListVipCollateralCoinService() *ListVipCollateralCoinService {
+//func (c *Client) NewListVipCollateralCoinService() *ListVipCollateralCoinService {
 //	return &ListVipCollateralCoinService{c: c}
 //}
 //
 //// NewVipLoanBorrowService returns crypto-loan vip borrow service
-//func (c *WsClient) NewVipLoanBorrowService() *VipLoanBorrowService {
+//func (c *Client) NewVipLoanBorrowService() *VipLoanBorrowService {
 //	return &VipLoanBorrowService{c: c}
 //}
 //
 //// NewVipLoanRepayService returns crypto-loan vip repay service
-//func (c *WsClient) NewVipLoanRepayService() *VipLoanRepayService {
+//func (c *Client) NewVipLoanRepayService() *VipLoanRepayService {
 //	return &VipLoanRepayService{c: c}
 //}
 //
 //// NewListVipLoanService returns list crypto-loan vip ongoing order service
-//func (c *WsClient) NewListVipLoanService() *ListVipLoanService {
+//func (c *Client) NewListVipLoanService() *ListVipLoanService {
 //	return &ListVipLoanService{c: c}
 //}

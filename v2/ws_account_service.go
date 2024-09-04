@@ -6,7 +6,7 @@ import (
 
 // WsGetAccountService get account info
 type WsGetAccountService struct {
-	c                *WsClient
+	c                *Client
 	omitZeroBalances *bool
 }
 
@@ -25,7 +25,7 @@ func (s *WsGetAccountService) Do(ctx context.Context) (res *Account, err error) 
 	if s.omitZeroBalances != nil {
 		r.setParam("omitZeroBalances", *s.omitZeroBalances)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callWsAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 
 // WsPingService ping server
 type WsPingService struct {
-	c *WsClient
+	c *Client
 }
 
 // Do send wsRequest
@@ -14,13 +14,13 @@ func (s *WsPingService) Do(ctx context.Context) (err error) {
 	r := &wsRequest{
 		method: "ping",
 	}
-	_, err = s.c.callAPI(ctx, r)
+	_, err = s.c.callWsAPI(ctx, r)
 	return err
 }
 
 // WsServerTimeService get server time
 type WsServerTimeService struct {
-	c *WsClient
+	c *Client
 }
 
 // Do send request
@@ -28,7 +28,7 @@ func (s *WsServerTimeService) Do(ctx context.Context) (serverTime int64, err err
 	r := &wsRequest{
 		method: "time",
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callWsAPI(ctx, r)
 	if err != nil {
 		return 0, err
 	}

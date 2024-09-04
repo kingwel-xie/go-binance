@@ -6,7 +6,7 @@ import (
 
 // WsDepthService show depth info
 type WsDepthService struct {
-	c      *WsClient
+	c      *Client
 	symbol string
 	limit  *int
 }
@@ -32,7 +32,7 @@ func (s *WsDepthService) Do(ctx context.Context) (res *DepthResponse, err error)
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, err := s.c.callWsAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
