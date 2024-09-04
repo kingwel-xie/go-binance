@@ -1123,13 +1123,25 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 	endpoint := fmt.Sprintf("%s/%s", getWsEndpoint(), listenKey)
 	cfg := newWsConfig(endpoint)
 	wsHandler := func(message []byte) {
-		event := new(WsUserDataEvent)
-		err := json.Unmarshal(message, event)
+		// handle TRADE_LITE
+		j, err := newJSON(message)
 		if err != nil {
 			errHandler(err)
 			return
 		}
-		handler(event)
+		eventType := j.Get("e").MustString()
+		if eventType == string(UserDataEventTypeTradeLite) {
+			// TODO: handle TRADE_LITE
+			//fmt.Println("TRADE_LITE", j)
+		} else {
+			event := new(WsUserDataEvent)
+			err := json.Unmarshal(message, event)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+			handler(event)
+		}
 	}
 	return wsServe(cfg, wsHandler, errHandler)
 }

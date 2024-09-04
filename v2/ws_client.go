@@ -252,7 +252,6 @@ func NewWsClient(apiKey, secretKey string) *WsClient {
 		Conn:      c,
 		Logger:    log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
 		StopC:     stopC,
-		Debug:     true,
 		state:     WsConnected,
 	}
 
