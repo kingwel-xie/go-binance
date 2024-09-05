@@ -398,6 +398,11 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 }
 
 func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, err error) {
+	// prefer to WS API
+	if c.WsConnected() && r.wsMethod != "" {
+		return c.callWsAPI(ctx, r)
+	}
+
 	err = c.parseRequest(r, opts...)
 	if err != nil {
 		return []byte{}, err
@@ -1199,4 +1204,8 @@ func (c *Client) NewVipLoanRepayService() *VipLoanRepayService {
 // NewListVipLoanService returns list crypto-loan vip ongoing order service
 func (c *Client) NewListVipLoanService() *ListVipLoanService {
 	return &ListVipLoanService{c: c}
+}
+
+func (c *Client) WsConnected() bool {
+	return c.wsState == WsConnected
 }

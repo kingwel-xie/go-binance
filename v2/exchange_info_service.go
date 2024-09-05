@@ -41,6 +41,7 @@ func (s *ExchangeInfoService) Do(ctx context.Context, opts ...RequestOption) (re
 		method:   http.MethodGet,
 		endpoint: "/api/v3/exchangeInfo",
 		secType:  secTypeNone,
+		wsMethod: "exchangeInfo",
 	}
 	m := params{}
 	if s.symbol != "" {

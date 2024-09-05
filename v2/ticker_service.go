@@ -124,6 +124,7 @@ func (s *ListPriceChangeStatsService) Do(ctx context.Context, opts ...RequestOpt
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/ticker/24hr",
+		wsMethod: "ticker.24hr",
 	}
 
 	if s.symbol != nil {
@@ -187,6 +188,7 @@ func (s *AveragePriceService) Do(ctx context.Context, opts ...RequestOption) (re
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/avgPrice",
+		wsMethod: "avgPrice",
 	}
 	r.setParam("symbol", s.symbol)
 	data, err := s.c.callAPI(ctx, r, opts...)

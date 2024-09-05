@@ -119,6 +119,7 @@ func (s *HistoricalTradesService) Do(ctx context.Context, opts ...RequestOption)
 		method:   http.MethodGet,
 		endpoint: "/api/v3/historicalTrades",
 		secType:  secTypeAPIKey,
+		wsMethod: "trades.historical",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.limit != nil {
@@ -215,6 +216,7 @@ func (s *AggTradesService) Do(ctx context.Context, opts ...RequestOption) (res [
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/aggTrades",
+		wsMethod: "trades.aggregate",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.fromID != nil {
@@ -277,6 +279,7 @@ func (s *RecentTradesService) Do(ctx context.Context, opts ...RequestOption) (re
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v1/trades",
+		wsMethod: "trades.recent",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.limit != nil {

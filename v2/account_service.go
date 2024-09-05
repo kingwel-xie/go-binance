@@ -23,6 +23,7 @@ func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/api/v3/account",
 		secType:  secTypeSigned,
+		wsMethod: "account.status",
 	}
 	if s.omitZeroBalances != nil {
 		r.setParam("omitZeroBalances", *s.omitZeroBalances)
