@@ -5,9 +5,9 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -174,6 +174,7 @@ const (
 	ForceOrderCloseTypeLiquidation ForceOrderCloseType = "LIQUIDATION"
 	ForceOrderCloseTypeADL         ForceOrderCloseType = "ADL"
 
+	apiKey        = "apiKey"
 	timestampKey  = "timestamp"
 	signatureKey  = "signature"
 	recvWindowKey = "recvWindow"
@@ -203,36 +204,26 @@ func getApiEndpoint() string {
 // You should always call this function before using this SDK.
 // Services will be created by the form client.NewXXXService().
 func NewClient(apiKey, secretKey string) *Client {
-	return &Client{
+	wsState := WsInit
+	c, stopC, disconnectedC := makeConn()
+	if c != nil {
+		wsState = WsConnected
+	}
+	client := &Client{
 		APIKey:     apiKey,
 		SecretKey:  secretKey,
 		BaseURL:    getApiEndpoint(),
 		UserAgent:  "Binance/golang",
 		HTTPClient: http.DefaultClient,
 		Logger:     log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
+		WsURL:      getWsAPIEndpoint(),
+		Conn:       c,
+		StopC:      stopC,
+		wsState:    wsState,
 	}
-}
+	client.handleDisconnected(disconnectedC)
 
-// NewProxiedClient passing a proxy url
-func NewProxiedClient(apiKey, secretKey, proxyUrl string) *Client {
-	proxy, err := url.Parse(proxyUrl)
-	if err != nil {
-		log.Fatal(err)
-	}
-	tr := &http.Transport{
-		Proxy:           http.ProxyURL(proxy),
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	return &Client{
-		APIKey:    apiKey,
-		SecretKey: secretKey,
-		BaseURL:   getApiEndpoint(),
-		UserAgent: "Binance/golang",
-		HTTPClient: &http.Client{
-			Transport: tr,
-		},
-		Logger: log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
-	}
+	return client
 }
 
 type doFunc func(req *http.Request) (*http.Response, error)
@@ -248,6 +239,14 @@ type Client struct {
 	Logger     *log.Logger
 	TimeOffset int64
 	do         doFunc
+	WsURL      string
+	Conn       *websocket.Conn
+	StopC      chan struct{}
+	wsState    WsClientState // init/connecting/connected
+}
+
+func (c *Client) WsConnected() bool {
+	return c.wsState == WsConnected
 }
 
 func (c *Client) debug(format string, v ...interface{}) {
@@ -315,6 +314,12 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 }
 
 func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+	// prefer to WS API
+	if c.WsConnected() && r.wsMethod != "" {
+		data, err = c.callWsAPI(ctx, r)
+		return data, &http.Header{}, err
+	}
+
 	err = c.parseRequest(r, opts...)
 	if err != nil {
 		return []byte{}, &http.Header{}, err

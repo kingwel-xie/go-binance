@@ -1,9 +1,10 @@
-package binance
+package futures
 
 import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"github.com/adshao/go-binance/v2/common"
 	"github.com/google/uuid"
@@ -26,8 +27,8 @@ const (
 
 // Endpoints
 var (
-	WsAPIMainURL    = "wss://ws-api.binance.com:443/ws-api/v3"
-	WsAPITestnetURL = "wss://testnet.binance.vision/ws-api/v3"
+	WsAPIMainURL    = "wss://ws-fapi.binance.com/ws-fapi/v1"
+	WsAPITestnetURL = "wss://testnet.binancefuture.com/ws-fapi/v1"
 )
 
 type _ResponseMap struct {

@@ -17,6 +17,7 @@ func (s *GetBalanceService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/fapi/v3/balance",
 		secType:  secTypeSigned,
+		wsMethod: "v2/account.balance",
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -54,6 +55,7 @@ func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/account",
 		secType:  secTypeSigned,
+		wsMethod: "v2/account.status",
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {

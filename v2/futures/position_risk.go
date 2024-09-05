@@ -24,6 +24,7 @@ func (s *GetPositionRiskService) Do(ctx context.Context, opts ...RequestOption) 
 		method:   http.MethodGet,
 		endpoint: "/fapi/v3/positionRisk",
 		secType:  secTypeSigned,
+		wsMethod: "v2/account.position",
 	}
 	if s.symbol != "" {
 		r.setParam("symbol", s.symbol)

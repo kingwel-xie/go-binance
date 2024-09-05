@@ -51,6 +51,7 @@ func (s *KlinesService) Do(ctx context.Context, opts ...RequestOption) (res []*K
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/klines",
+		wsMethod: "klines",
 	}
 	r.setParam("symbol", s.symbol)
 	r.setParam("interval", s.interval)

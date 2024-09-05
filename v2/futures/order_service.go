@@ -128,12 +128,13 @@ func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderServi
 	return s
 }
 
-func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (s *CreateOrderService) createOrder(ctx context.Context, endpoint, wsMethod string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
 
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: endpoint,
 		secType:  secTypeSigned,
+		wsMethod: wsMethod,
 	}
 	m := params{
 		"symbol":           s.symbol,
@@ -187,7 +188,7 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 
 // Do send request
 func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
-	data, header, err := s.createOrder(ctx, "/fapi/v1/order", opts...)
+	data, header, err := s.createOrder(ctx, "/fapi/v1/order", "order.place", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -351,6 +352,7 @@ func (s *GetOrderService) Do(ctx context.Context, opts ...RequestOption) (res *O
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/order",
 		secType:  secTypeSigned,
+		wsMethod: "order.status",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.orderID != nil {
@@ -506,6 +508,7 @@ func (s *CancelOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 		method:   http.MethodDelete,
 		endpoint: "/fapi/v1/order",
 		secType:  secTypeSigned,
+		wsMethod: "order.cancel",
 	}
 	r.setFormParam("symbol", s.symbol)
 	if s.orderID != nil {

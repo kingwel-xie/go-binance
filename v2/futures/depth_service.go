@@ -31,6 +31,7 @@ func (s *DepthService) Do(ctx context.Context, opts ...RequestOption) (res *Dept
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/depth",
+		wsMethod: "depth",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.limit != nil {

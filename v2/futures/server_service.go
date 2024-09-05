@@ -15,6 +15,7 @@ func (s *PingService) Do(ctx context.Context, opts ...RequestOption) (err error)
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/ping",
+		wsMethod: "ping",
 	}
 	_, _, err = s.c.callAPI(ctx, r, opts...)
 	return err
@@ -30,6 +31,7 @@ func (s *ServerTimeService) Do(ctx context.Context, opts ...RequestOption) (serv
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/time",
+		wsMethod: "time",
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {

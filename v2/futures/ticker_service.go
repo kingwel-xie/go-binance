@@ -25,6 +25,7 @@ func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) 
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v1/ticker/bookTicker",
+		wsMethod: "ticker.book",
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
@@ -68,6 +69,7 @@ func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res 
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/ticker/price",
+		wsMethod: "ticker.price",
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)

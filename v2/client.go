@@ -272,9 +272,10 @@ func getAPIEndpoint() string {
 // You should always call this function before using this SDK.
 // Services will be created by the form client.NewXXXService().
 func NewClient(apiKey, secretKey string) *Client {
+	wsState := WsInit
 	c, stopC, disconnectedC := makeConn()
-	if c == nil {
-		return nil
+	if c != nil {
+		wsState = WsConnected
 	}
 
 	client := &Client{
@@ -287,7 +288,7 @@ func NewClient(apiKey, secretKey string) *Client {
 		WsURL:      getWsAPIEndpoint(),
 		Conn:       c,
 		StopC:      stopC,
-		wsState:    WsConnected,
+		wsState:    wsState,
 	}
 	client.handleDisconnected(disconnectedC)
 

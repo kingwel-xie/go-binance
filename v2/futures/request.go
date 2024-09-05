@@ -28,6 +28,10 @@ type request struct {
 	header     http.Header
 	body       io.Reader
 	fullURL    string
+	// for WS API
+	wsMethod string
+	wsParams params
+	ch       chan interface{}
 }
 
 // setParam set param with key/value to query string
