@@ -9,8 +9,9 @@ import (
 
 // ListBookTickersService list best price/qty on the order book for a symbol or symbols
 type ListBookTickersService struct {
-	c      *Client
-	symbol *string
+	c       *Client
+	symbol  *string
+	symbols []string
 }
 
 // Symbol set symbol
@@ -19,14 +20,24 @@ func (s *ListBookTickersService) Symbol(symbol string) *ListBookTickersService {
 	return s
 }
 
+// Symbols set symbols
+func (s *ListBookTickersService) Symbols(symbols []string) *ListBookTickersService {
+	s.symbols = symbols
+	return s
+}
+
 // Do send request
 func (s *ListBookTickersService) Do(ctx context.Context, opts ...RequestOption) (res []*BookTicker, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/ticker/bookTicker",
+		wsMethod: "ticker.book",
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
+	} else if s.symbols != nil {
+		s, _ := json.Marshal(s.symbols)
+		r.setParam("symbols", string(s))
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	data = common.ToJSONList(data)
@@ -63,11 +74,18 @@ func (s *ListPricesService) Symbol(symbol string) *ListPricesService {
 	return s
 }
 
+// Symbols set symbols
+func (s *ListPricesService) Symbols(symbols []string) *ListPricesService {
+	s.symbols = symbols
+	return s
+}
+
 // Do send request
 func (s *ListPricesService) Do(ctx context.Context, opts ...RequestOption) (res []*SymbolPrice, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/ticker/price",
+		wsMethod: "ticker.price",
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)
@@ -109,12 +127,6 @@ func (s *ListPriceChangeStatsService) Symbol(symbol string) *ListPriceChangeStat
 
 // Symbols set symbols
 func (s *ListPriceChangeStatsService) Symbols(symbols []string) *ListPriceChangeStatsService {
-	s.symbols = symbols
-	return s
-}
-
-// Symbols set symbols
-func (s *ListPricesService) Symbols(symbols []string) *ListPricesService {
 	s.symbols = symbols
 	return s
 }
@@ -266,6 +278,7 @@ func (s *ListSymbolTickerService) Do(ctx context.Context, opts ...RequestOption)
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/api/v3/ticker",
+		wsMethod: "ticker",
 	}
 	if s.symbol != nil {
 		r.setParam("symbol", *s.symbol)

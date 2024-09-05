@@ -95,11 +95,12 @@ func (s *CreateOrderService) NewOrderRespType(newOrderRespType NewOrderRespType)
 	return s
 }
 
-func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, opts ...RequestOption) (data []byte, err error) {
+func (s *CreateOrderService) createOrder(ctx context.Context, endpoint, wsMethod string, opts ...RequestOption) (data []byte, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: endpoint,
 		secType:  secTypeSigned,
+		wsMethod: wsMethod,
 	}
 	m := params{
 		"symbol": s.symbol,
@@ -143,7 +144,7 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 
 // Do send request
 func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
-	data, err := s.createOrder(ctx, "/api/v3/order", opts...)
+	data, err := s.createOrder(ctx, "/api/v3/order", "order.place", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +158,7 @@ func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 
 // Test send test api to check if the request is valid
 func (s *CreateOrderService) Test(ctx context.Context, opts ...RequestOption) (err error) {
-	_, err = s.createOrder(ctx, "/api/v3/order/test", opts...)
+	_, err = s.createOrder(ctx, "/api/v3/order/test", "order.test", opts...)
 	return err
 }
 
@@ -412,6 +413,7 @@ func (s *ListOpenOrderService) Do(ctx context.Context, opts ...RequestOption) (r
 		method:   http.MethodGet,
 		endpoint: "/api/v3/openOrderList",
 		secType:  secTypeSigned,
+		wsMethod: "openOrderLists.status",
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -443,6 +445,7 @@ func (s *ListOpenOrdersService) Do(ctx context.Context, opts ...RequestOption) (
 		method:   http.MethodGet,
 		endpoint: "/api/v3/openOrders",
 		secType:  secTypeSigned,
+		wsMethod: "openOrders.status",
 	}
 	if s.symbol != "" {
 		r.setParam("symbol", s.symbol)
@@ -491,6 +494,7 @@ func (s *GetOrderService) Do(ctx context.Context, opts ...RequestOption) (res *O
 		method:   http.MethodGet,
 		endpoint: "/api/v3/order",
 		secType:  secTypeSigned,
+		wsMethod: "order.status",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.orderID != nil {
@@ -580,6 +584,7 @@ func (s *ListOrdersService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/api/v3/allOrders",
 		secType:  secTypeSigned,
+		wsMethod: "allOrders",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.orderID != nil {
@@ -645,6 +650,7 @@ func (s *CancelOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 		method:   http.MethodDelete,
 		endpoint: "/api/v3/order",
 		secType:  secTypeSigned,
+		wsMethod: "order.cancel",
 	}
 	r.setFormParam("symbol", s.symbol)
 	if s.orderID != nil {

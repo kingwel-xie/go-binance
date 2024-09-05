@@ -58,6 +58,7 @@ func (s *ListTradesService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/api/v3/myTrades",
 		secType:  secTypeSigned,
+		wsMethod: "myTrades",
 	}
 	r.setParam("symbol", s.symbol)
 	if s.limit != nil {
