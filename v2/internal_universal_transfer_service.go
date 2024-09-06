@@ -82,7 +82,7 @@ func (s *InternalUniversalTransferService) Do(ctx context.Context, opts ...Reque
 	if v := s.symbol; v != nil {
 		r.setParam("symbol", *v)
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (s *InternalUniversalTransferHistoryService) Do(ctx context.Context, opts .
 	if v := s.clientTranId; v != nil {
 		r.setParam("clientTranId", *v)
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}

@@ -29,7 +29,7 @@ func (s *TradeFeeService) Do(ctx context.Context) (res []*TradeFeeDetails, err e
 		r.setParam("symbol", *s.symbol)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return res, err
 	}

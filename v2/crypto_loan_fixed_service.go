@@ -40,7 +40,7 @@ func (s *ListLoanableCoinService) Do(ctx context.Context) (res *LoanableCoinList
 		r.setParam("vipLevel", *s.vipLevel)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -107,7 +107,7 @@ func (s *ListCollateralCoinService) Do(ctx context.Context) (res *CollateralCoin
 	if s.vipLevel != nil {
 		r.setParam("vipLevel", *s.vipLevel)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -177,7 +177,7 @@ func (s *LoanBorrowLockedService) Do(ctx context.Context) (res *LoanBorrowLocked
 	r.setParam("collateralAmount", s.collateralAmount)
 	r.setParam("loanTerm", s.loanTerm)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -236,7 +236,7 @@ func (s *LoanRepayLockedService) Do(ctx context.Context) (res *LoanRepayLockedRe
 	r.setParam("amount", s.amount)
 	r.setParam("type", s.repayType)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -293,7 +293,7 @@ func (s *ListLoanLockedService) Do(ctx context.Context) (res *LoanOrderLockedLis
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

@@ -49,7 +49,7 @@ func (s *ListDustLogService) Do(ctx context.Context) (withdraws *DustResult, err
 	if s.endTime != nil {
 		r.setParam("endTime", *s.endTime)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -109,7 +109,7 @@ func (s *DustTransferService) Do(ctx context.Context) (withdraws *DustTransferRe
 	for _, a := range s.asset {
 		r.addParam("asset", a)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -151,7 +151,7 @@ func (s *ListDustService) Do(ctx context.Context) (res *ListDustResponse, err er
 		endpoint: "/sapi/v1/asset/dust-btc",
 		secType:  secTypeSigned,
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

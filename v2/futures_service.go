@@ -45,7 +45,7 @@ func (s *FuturesTransferService) Do(ctx context.Context, opts ...RequestOption) 
 	}
 	r.setFormParams(m)
 	res = new(TransactionResponse)
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (s *ListFuturesTransferService) Do(ctx context.Context, opts ...RequestOpti
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

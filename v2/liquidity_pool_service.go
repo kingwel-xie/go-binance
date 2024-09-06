@@ -17,7 +17,7 @@ func (s *GetAllLiquidityPoolService) Do(ctx context.Context, opts ...RequestOpti
 		endpoint: "/sapi/v1/bswap/pools",
 		secType:  secTypeAPIKey,
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *GetLiquidityPoolDetailService) Do(ctx context.Context) ([]*LiquidityPoo
 	if s.poolId != nil {
 		r.setParam("poolId", *s.poolId)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (s *AddLiquidityPreviewService) Do(ctx context.Context) (*AddLiquidityPrevi
 	r.setParam("quoteAsset", *s.quoteAsset)
 	r.setParam("quoteQty", *s.quoteQty)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func (s *GetSwapQuoteService) Do(ctx context.Context) (*GetSwapQuoteResponse, er
 	r.setParam("baseAsset", *s.baseAsset)
 	r.setParam("quoteQty", *s.quoteQty)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (s *SwapService) Do(ctx context.Context) (*SwapResponse, error) {
 	r.setParam("baseAsset", *s.baseAsset)
 	r.setParam("quoteQty", *s.quoteQty)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +360,7 @@ func (s *GetUserSwapRecordsService) Do(ctx context.Context) ([]*SwapRecord, erro
 		r.setParam("limit", *s.resultSize)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +422,7 @@ func (s *AddLiquidityService) Do(ctx context.Context) (*AddLiquidityResponse, er
 	r.setParam("asset", *s.quoteAsset)
 	r.setParam("quantity", *s.quoteQty)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -486,7 +486,7 @@ func (s *RemoveLiquidityService) Do(ctx context.Context) (*RemoveLiquidityRespon
 	}
 	r.setParam("shareAmount", *s.shareAmount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -525,7 +525,7 @@ func (s *ClaimRewardService) Do(ctx context.Context) (*ClaimRewardResponse, erro
 		r.setParam("type", *s.rewardType)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -619,7 +619,7 @@ func (s *QueryClaimedRewardHistoryService) Do(ctx context.Context) ([]*ClaimedRe
 		r.setParam("limit", *s.resultSize)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}

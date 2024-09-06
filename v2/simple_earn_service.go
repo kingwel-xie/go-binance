@@ -18,7 +18,7 @@ func (s *SimpleEarnAccountService) Do(ctx context.Context) (res *SimpleEarnAccou
 		secType:  secTypeSigned,
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (s *ListSimpleEarnFlexibleService) Do(ctx context.Context) (res *SimpleEarn
 		r.setParam("size", *s.size)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -159,7 +159,7 @@ func (s *ListSimpleEarnLockedService) Do(ctx context.Context) (res *SimpleEarnLo
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -225,7 +225,7 @@ func (s *SubscribeSimpleEarnFlexibleService) Do(ctx context.Context) (res *Subsc
 	r.setParam("amount", s.amount)
 	r.setParam("sourceAccount", "ALL")
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -273,7 +273,7 @@ func (s *SubscribeSimpleEarnLockedService) Do(ctx context.Context) (res *Subscri
 	r.setParam("amount", s.amount)
 	r.setParam("sourceAccount", "ALL")
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -326,7 +326,7 @@ func (s *RedeemSimpleEarnFlexibleService) Do(ctx context.Context) (res *RedeemSi
 	}
 	r.setParam("destAccount", "SPOT")
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -366,7 +366,7 @@ func (s *RedeemSimpleEarnLockedService) Do(ctx context.Context) (res *RedeemSimp
 	r.setParam("positionId", s.positionId)
 	//r.setParam("destAccount", "SPOT")
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -428,7 +428,7 @@ func (s *GetSimpleEarnFlexiblePositionService) Do(ctx context.Context) (res *Get
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -504,7 +504,7 @@ func (s *GetSimpleEarnLockedPositionService) Do(ctx context.Context) (res *GetSi
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -585,7 +585,7 @@ func (s *ListSimpleEarnFlexibleRateHistoryService) Do(ctx context.Context) (res 
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

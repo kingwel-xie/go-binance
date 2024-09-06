@@ -30,7 +30,7 @@ func (s *ListVipLoanableCoinService) Do(ctx context.Context) (res *VipLoanableCo
 		r.setParam("loanCoin", *s.loanCoin)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (s *ListVipCollateralCoinService) Do(ctx context.Context) (res *VipCollater
 	if s.collateralCoin != nil {
 		r.setParam("collateralCoin", *s.collateralCoin)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -172,7 +172,7 @@ func (s *VipLoanBorrowService) Do(ctx context.Context) (res *VipLoanBorrowRespon
 	r.setParam("loanAmount", s.loanAmount)
 	r.setParam("isFlexibleRate", s.isFlexibleRate)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -225,7 +225,7 @@ func (s *VipLoanRepayService) Do(ctx context.Context) (res *VipLoanRepayResponse
 	r.setParam("orderId", s.orderId)
 	r.setParam("amount", s.amount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -282,7 +282,7 @@ func (s *ListVipLoanService) Do(ctx context.Context) (res *VipLoanOrderList, err
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -362,7 +362,7 @@ type VipLoanOrderList struct {
 //	r.setParam("collateralCoin", s.collateralCoin)
 //	r.setParam("adjustmentAmount", s.adjustmentAmount)
 //	r.setParam("direction", s.direction)
-//	data, err := s.c.callAPI(ctx, r)
+//	data, _, err := s.c.callAPI(ctx, r)
 //	if err != nil {
 //		return
 //	}

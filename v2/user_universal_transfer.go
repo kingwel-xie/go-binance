@@ -73,7 +73,7 @@ func (s *CreateUserUniversalTransferService) Do(ctx context.Context) (*CreateUse
 		r.setParam("toSymbol", *v)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ type CreateUserUniversalTransferResponse struct {
 // 	if s.toSymbol != nil {
 // 		r.setParam("toSymbol", *s.toSymbol)
 // 	}
-// 	data, err := s.c.callAPI(ctx, r)
+// 	data, _, err := s.c.callAPI(ctx, r)
 // 	if err != nil {
 // 		return
 // 	}

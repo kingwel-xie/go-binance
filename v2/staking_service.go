@@ -65,7 +65,7 @@ func (s *StakingProductPositionService) Do(ctx context.Context) (*StakingProduct
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (s *StakingHistoryService) Do(ctx context.Context) (*StakingHistory, error)
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}

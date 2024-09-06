@@ -17,7 +17,7 @@ func (s *EthStakingAccountService) Do(ctx context.Context) (*EthStakingAccountRe
 		endpoint: "/sapi/v2/eth-staking/account",
 		secType:  secTypeSigned,
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (s *EthStakingHistoryService) Do(ctx context.Context) (*EthStakingHistoryRe
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (s *EthStakingRewardsHistoryService) Do(ctx context.Context) (*EthStakingRe
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +249,7 @@ func (s *EthStakingRedemptionHistoryService) Do(ctx context.Context) (*EthStakin
 	if s.size != nil {
 		r.setParam("size", *s.size)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func (s *EthStakingService) Do(ctx context.Context) (res *EthStakingResponse, er
 	}
 	r.setParam("amount", s.amount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -337,7 +337,7 @@ func (s *EthWrappingService) Do(ctx context.Context) (res *EthWrappingResponse, 
 	}
 	r.setParam("amount", s.amount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -385,7 +385,7 @@ func (s *EthRedeemService) Do(ctx context.Context) (res *EthRedeemResponse, err 
 	r.setParam("asset", s.asset)
 	r.setParam("amount", s.amount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

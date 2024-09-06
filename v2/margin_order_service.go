@@ -149,7 +149,7 @@ func (s *CreateMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 	}
 	r.setFormParams(m)
 	res = new(CreateOrderResponse)
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (s *CancelMarginOrderService) Do(ctx context.Context, opts ...RequestOption
 		}
 	}
 
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +288,7 @@ func (s *GetMarginOrderService) Do(ctx context.Context, opts ...RequestOption) (
 		r.setParam("isIsolated", "TRUE")
 	}
 
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +333,7 @@ func (s *ListMarginOpenOrdersService) Do(ctx context.Context, opts ...RequestOpt
 		r.setParam("isIsolated", "TRUE")
 	}
 
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*Order{}, err
 	}
@@ -416,7 +416,7 @@ func (s *ListMarginOrdersService) Do(ctx context.Context, opts ...RequestOption)
 		r.setParam("isIsolated", "TRUE")
 	}
 
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []*Order{}, err
 	}
@@ -604,7 +604,7 @@ func (s *CreateMarginOCOService) createOrder(ctx context.Context, opts ...Reques
 		m["sideEffectType"] = *s.sideEffectType
 	}
 	r.setFormParams(m)
-	data, err = s.c.callAPI(ctx, r, opts...)
+	data, _, err = s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -726,7 +726,7 @@ func (s *CancelMarginOCOService) Do(ctx context.Context, opts ...RequestOption) 
 	if s.newClientOrderID != "" {
 		r.setFormParam("newClientOrderId", s.newClientOrderID)
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

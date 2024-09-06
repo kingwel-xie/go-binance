@@ -91,7 +91,7 @@ func (s *ListDepositsService) Do(ctx context.Context) (res []*Deposit, err error
 		r.setParam("txId", *s.txId)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -151,7 +151,7 @@ func (s *GetDepositsAddressService) Do(ctx context.Context) (*GetDepositAddressR
 		r.setParam("network", *s.network)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return nil, err
 	}

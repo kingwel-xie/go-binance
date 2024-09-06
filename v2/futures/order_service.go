@@ -190,12 +190,12 @@ func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 	}
 	res = new(CreateOrderResponse)
 	err = json.Unmarshal(data, res)
-	res.RateLimitOrder10s = rateLimits.Order10s
-	res.RateLimitOrder1m = rateLimits.Order1m
-
 	if err != nil {
 		return nil, err
 	}
+	res.RateLimitOrder10s = rateLimits.Order10s
+	res.RateLimitOrder1m = rateLimits.Order1m
+
 	return res, nil
 }
 

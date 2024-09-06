@@ -29,7 +29,7 @@ func (s *GetAssetDetailService) Do(ctx context.Context) (res map[string]AssetDet
 	if s.asset != nil {
 		r.setParam("asset", *s.asset)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (s *GetAllCoinsInfoService) Do(ctx context.Context) (res []*CoinInfo, err e
 		endpoint: "/sapi/v1/capital/config/getall",
 		secType:  secTypeSigned,
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return []*CoinInfo{}, err
 	}
@@ -153,7 +153,7 @@ func (s *GetUserAssetService) Do(ctx context.Context) (res []UserAssetRecord, er
 	if s.needBtcValuation {
 		r.setParam("needBtcValuation", s.needBtcValuation)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

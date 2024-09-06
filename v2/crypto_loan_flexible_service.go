@@ -30,7 +30,7 @@ func (s *ListLoanableCoinFlexibleService) Do(ctx context.Context) (res *Loanable
 		r.setParam("loanCoin", *s.loanCoin)
 	}
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (s *ListCollateralCoinFlexibleService) Do(ctx context.Context) (res *Collat
 	if s.collateralCoin != nil {
 		r.setParam("collateralCoin", *s.collateralCoin)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -138,7 +138,7 @@ func (s *LoanBorrowFlexibleService) Do(ctx context.Context) (res *LoanBorrowFlex
 	r.setParam("collateralCoin", s.collateralCoin)
 	r.setParam("collateralAmount", s.collateralAmount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -196,7 +196,7 @@ func (s *LoanRepayFlexibleService) Do(ctx context.Context) (res *LoanRepayFlexib
 	r.setParam("collateralCoin", s.collateralCoin)
 	r.setParam("repayAmount", s.repayAmount)
 
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -253,7 +253,7 @@ func (s *ListLoanFlexibleService) Do(ctx context.Context) (res *LoanOrderFlexibl
 	if s.limit != nil {
 		r.setParam("limit", *s.limit)
 	}
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}
@@ -321,7 +321,7 @@ func (s *AdjustLtvLoanFlexibleService) Do(ctx context.Context) (res *AdjustLtvLo
 	r.setParam("collateralCoin", s.collateralCoin)
 	r.setParam("adjustmentAmount", s.adjustmentAmount)
 	r.setParam("direction", s.direction)
-	data, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
 		return
 	}

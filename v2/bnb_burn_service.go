@@ -17,7 +17,7 @@ func (s *GetBNBBurnService) Do(ctx context.Context, opts ...RequestOption) (*BNB
 		endpoint: "/sapi/v1/bnbBurn",
 		secType:  secTypeSigned,
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (s *ToggleBNBBurnService) Do(ctx context.Context, opts ...RequestOption) (*
 		r.setParam("interestBNBBurn", *s.interestBNBBurn)
 	}
 
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return nil, err
 	}

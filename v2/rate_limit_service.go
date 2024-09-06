@@ -18,7 +18,7 @@ func (s *RateLimitService) Do(ctx context.Context, opts ...RequestOption) (res [
 		endpoint: "/api/v3/rateLimit/order",
 		secType:  secTypeSigned,
 	}
-	data, err := s.c.callAPI(ctx, r, opts...)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return res, err
 	}
