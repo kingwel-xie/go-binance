@@ -8,11 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -180,6 +181,46 @@ const (
 	recvWindowKey = "recvWindow"
 )
 
+type RateLimits struct {
+	RequestWeight1M int
+	RawRequest5M    int
+	Order10s        int
+	Order1m         int
+}
+
+func RateLimitsFromHeader(header *http.Header) *RateLimits {
+	var String2Int = func(intStr string, args ...int) int {
+		v, err := strconv.ParseInt(intStr, 10, 64)
+		if err != nil && len(args) > 0 {
+			v = int64(args[0])
+		}
+		return int(v)
+	}
+	return &RateLimits{
+		RequestWeight1M: String2Int(header.Get("X-Mbx-Used-Weight-1m")),
+		Order1m:         String2Int(header.Get("X-Mbx-Order-Count-1m")),
+		Order10s:        String2Int(header.Get("X-Mbx-Order-Count-10s")),
+		RawRequest5M:    String2Int(header.Get("X-Mbx-Raw-Quests-5m")),
+	}
+}
+
+func RateLimitsFromWsResponse(response *WsApiResponse) *RateLimits {
+	var locate = func(typ, interval string, num int) int {
+		for _, e := range response.RateLimits {
+			if e.RateLimitType == typ && e.Interval == interval && e.IntervalNum == num {
+				return e.Count
+			}
+		}
+		return 0
+	}
+	return &RateLimits{
+		RequestWeight1M: locate("REQUEST_WEIGHT", "MINUTE", 1),
+		RawRequest5M:    locate("RAW_QUESTS", "MINUTE", 5),
+		Order10s:        locate("ORDERS", "SECOND", 10),
+		Order1m:         locate("ORDERS", "MINUTE", 1),
+	}
+}
+
 func currentTimestamp() int64 {
 	return int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond)
 }
@@ -313,20 +354,20 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 	return nil
 }
 
-func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) ([]byte, *RateLimits, error) {
+	var err error
 	// prefer to WS API
 	if c.WsConnected() && r.wsMethod != "" {
-		data, err = c.callWsAPI(ctx, r)
-		return data, &http.Header{}, err
+		return c.callWsAPI(ctx, r, opts...)
 	}
 
 	err = c.parseRequest(r, opts...)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return nil, nil, err
 	}
 	req, err := http.NewRequest(r.method, r.fullURL, r.body)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return nil, nil, err
 	}
 	req = req.WithContext(ctx)
 	req.Header = r.header
@@ -337,11 +378,11 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	}
 	res, err := f(req)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return nil, nil, err
 	}
-	data, err = ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return []byte{}, &http.Header{}, err
+		return nil, nil, err
 	}
 	defer func() {
 		cerr := res.Body.Close()
@@ -361,9 +402,9 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		if e != nil {
 			c.debug("failed to unmarshal json: %s", e)
 		}
-		return nil, &http.Header{}, apiErr
+		return nil, nil, apiErr
 	}
-	return data, &res.Header, nil
+	return data, RateLimitsFromHeader(&res.Header), nil
 }
 
 // SetApiEndpoint set api Endpoint

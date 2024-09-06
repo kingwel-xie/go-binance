@@ -221,7 +221,11 @@ func (v params) Encode() string {
 	return buf.String()
 }
 
-func (c *Client) parseWsRequest(r *request) (err error) {
+func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
+	// set request options from user
+	for _, opt := range opts {
+		opt(r)
+	}
 	if r.recvWindow > 0 {
 		r.setParam(recvWindowKey, r.recvWindow)
 	}
@@ -254,10 +258,10 @@ func (c *Client) parseWsRequest(r *request) (err error) {
 	return nil
 }
 
-func (c *Client) callWsAPI(ctx context.Context, r *request) ([]byte, error) {
-	err := c.parseWsRequest(r)
+func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOption) ([]byte, *RateLimits, error) {
+	err := c.parseWsRequest(r, opts...)
 	if err != nil {
-		return []byte{}, err
+		return nil, nil, err
 	}
 
 	// allocate channel, size 1
@@ -281,7 +285,7 @@ func (c *Client) callWsAPI(ctx context.Context, r *request) ([]byte, error) {
 	//}
 	//res, err := f(req)
 	if err != nil {
-		return []byte{}, err
+		return nil, nil, err
 	}
 
 	// timeout context
@@ -290,10 +294,10 @@ func (c *Client) callWsAPI(ctx context.Context, r *request) ([]byte, error) {
 
 	select {
 	case <-ctx.Done():
-		return []byte{}, ctx.Err()
+		return nil, nil, ctx.Err()
 
 	case <-ctx2.Done():
-		return []byte{}, ctx2.Err()
+		return nil, nil, ctx2.Err()
 
 	case res := <-ch:
 		c.debug("response status code: %d", res.Status)
@@ -304,8 +308,8 @@ func (c *Client) callWsAPI(ctx context.Context, r *request) ([]byte, error) {
 			apiErr := new(common.APIError)
 			apiErr.Code = res.Error.Code
 			apiErr.Message = res.Error.Msg
-			return nil, apiErr
+			return nil, nil, apiErr
 		}
-		return []byte(res.Result), nil
+		return []byte(res.Result), RateLimitsFromWsResponse(res), nil
 	}
 }

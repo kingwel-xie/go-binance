@@ -220,7 +220,11 @@ func (v params) Encode() string {
 	return buf.String()
 }
 
-func (c *Client) parseWsRequest(r *request) (err error) {
+func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
+	// set request options from user
+	for _, opt := range opts {
+		opt(r)
+	}
 	if r.recvWindow > 0 {
 		r.setParam(recvWindowKey, r.recvWindow)
 	}
@@ -253,8 +257,8 @@ func (c *Client) parseWsRequest(r *request) (err error) {
 	return nil
 }
 
-func (c *Client) callWsAPI(ctx context.Context, r *request) ([]byte, error) {
-	err := c.parseWsRequest(r)
+func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOption) ([]byte, error) {
+	err := c.parseWsRequest(r, opts...)
 	if err != nil {
 		return []byte{}, err
 	}

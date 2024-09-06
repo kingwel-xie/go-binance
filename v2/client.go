@@ -401,7 +401,7 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) (data []byte, err error) {
 	// prefer to WS API
 	if c.WsConnected() && r.wsMethod != "" {
-		return c.callWsAPI(ctx, r)
+		return c.callWsAPI(ctx, r, opts...)
 	}
 
 	err = c.parseRequest(r, opts...)

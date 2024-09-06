@@ -128,7 +128,7 @@ func (s *CreateOrderService) ClosePosition(closePosition bool) *CreateOrderServi
 	return s
 }
 
-func (s *CreateOrderService) createOrder(ctx context.Context, endpoint, wsMethod string, opts ...RequestOption) (data []byte, header *http.Header, err error) {
+func (s *CreateOrderService) createOrder(ctx context.Context, endpoint, wsMethod string, opts ...RequestOption) (data []byte, rateLimits *RateLimits, err error) {
 
 	r := &request{
 		method:   http.MethodPost,
@@ -179,23 +179,19 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint, wsMethod
 		m["closePosition"] = *s.closePosition
 	}
 	r.setFormParams(m)
-	data, header, err = s.c.callAPI(ctx, r, opts...)
-	if err != nil {
-		return []byte{}, &http.Header{}, err
-	}
-	return data, header, nil
+	return s.c.callAPI(ctx, r, opts...)
 }
 
 // Do send request
 func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res *CreateOrderResponse, err error) {
-	data, header, err := s.createOrder(ctx, "/fapi/v1/order", "order.place", opts...)
+	data, rateLimits, err := s.createOrder(ctx, "/fapi/v1/order", "order.place", opts...)
 	if err != nil {
 		return nil, err
 	}
 	res = new(CreateOrderResponse)
 	err = json.Unmarshal(data, res)
-	res.RateLimitOrder10s = header.Get("X-Mbx-Order-Count-10s")
-	res.RateLimitOrder1m = header.Get("X-Mbx-Order-Count-1m")
+	res.RateLimitOrder10s = rateLimits.Order10s
+	res.RateLimitOrder1m = rateLimits.Order1m
 
 	if err != nil {
 		return nil, err
@@ -231,8 +227,8 @@ type CreateOrderResponse struct {
 	GoodTillDate            int64            `json:"goodTillDate"`                // order pre-set auto cancel time for TIF GTD order
 	CumQty                  string           `json:"cumQty"`                      //
 	OrigType                OrderType        `json:"origType"`                    //
-	RateLimitOrder10s       string           `json:"rateLimitOrder10s,omitempty"` //
-	RateLimitOrder1m        string           `json:"rateLimitOrder1m,omitempty"`  //
+	RateLimitOrder10s       int              `json:"rateLimitOrder10s,omitempty"` //
+	RateLimitOrder1m        int              `json:"rateLimitOrder1m,omitempty"`  //
 }
 
 // ListOpenOrdersService list opened orders

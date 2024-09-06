@@ -55,7 +55,7 @@ func (s *GetAccountService) Do(ctx context.Context, opts ...RequestOption) (res 
 		method:   http.MethodGet,
 		endpoint: "/fapi/v2/account",
 		secType:  secTypeSigned,
-		wsMethod: "v2/account.status",
+		wsMethod: "account.status", // note we dont use v2/account.status, whic doesn't return entryPrice & leverage...
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
