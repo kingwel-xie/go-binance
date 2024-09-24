@@ -515,3 +515,8 @@ func (c *Client) NewChangePositionModeService() *ChangePositionModeService {
 func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 	return &GetPositionModeService{c: c}
 }
+
+// NewRepayService returns repay service
+func (c *Client) NewRepayService() *RepayService {
+	return &RepayService{c: c}
+}
