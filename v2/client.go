@@ -1252,3 +1252,35 @@ func (c *Client) NewVipLoanRepayService() *VipLoanRepayService {
 func (c *Client) NewListVipLoanService() *ListVipLoanService {
 	return &ListVipLoanService{c: c}
 }
+
+// SOL staking
+
+// NewSolStakingAccountService returns sol-stake account service
+func (c *Client) NewSolStakingAccountService() *SolStakingAccountService {
+	return &SolStakingAccountService{c: c}
+}
+
+// NewSolStakingHistoryService returns sol-stake staking history service
+func (c *Client) NewSolStakingHistoryService() *SolStakingHistoryService {
+	return &SolStakingHistoryService{c: c}
+}
+
+// NewSolStakingRedemptionHistoryService returns sol-stake redemption history service
+func (c *Client) NewSolStakingRedemptionHistoryService() *SolStakingRedemptionHistoryService {
+	return &SolStakingRedemptionHistoryService{c: c}
+}
+
+// NewSolStakingRewardsHistoryService returns sol-stake rewards history service
+func (c *Client) NewSolStakingRewardsHistoryService() *SolStakingRewardsHistoryService {
+	return &SolStakingRewardsHistoryService{c: c}
+}
+
+// NewSolStakingService returns sol-stake staking service
+func (c *Client) NewSolStakingService() *SolStakingService {
+	return &SolStakingService{c: c}
+}
+
+// NewSolRedeemService returns sol-stake redeem service
+func (c *Client) NewSolRedeemService() *SolRedeemService {
+	return &SolRedeemService{c: c}
+}
