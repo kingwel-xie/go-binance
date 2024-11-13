@@ -520,3 +520,8 @@ func (c *Client) NewGetPositionModeService() *GetPositionModeService {
 func (c *Client) NewRepayService() *RepayService {
 	return &RepayService{c: c}
 }
+
+// NewGetInterestHistoryService init getting negative balance interest history service
+func (c *Client) NewGetInterestHistoryService() *GetInterestHistoryService {
+	return &GetInterestHistoryService{c: c}
+}
