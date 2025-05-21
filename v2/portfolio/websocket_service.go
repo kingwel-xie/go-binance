@@ -128,7 +128,7 @@ type WsMarginOpenLoss struct {
 type WsMarginLiabilityChange struct {
 	Asset          string `json:"a"`
 	Type           string `json:"t"`
-	Tx             int64  `json:"tx"`
+	TxId           int64  `json:"T"`
 	Principal      string `json:"p"`
 	Interest       string `json:"i"`
 	TotalLiability string `json:"l"`
