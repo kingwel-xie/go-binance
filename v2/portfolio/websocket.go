@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const wsReadLimit = 65535 * 100
+
 // WsHandler handle raw websocket message
 type WsHandler func(message []byte)
 
@@ -35,7 +37,7 @@ var wsServe = func(cfg *WsConfig, handler WsHandler, errHandler ErrHandler) (don
 	if err != nil {
 		return nil, nil, err
 	}
-	c.SetReadLimit(655350)
+	c.SetReadLimit(wsReadLimit)
 	doneC = make(chan struct{})
 	stopC = make(chan struct{})
 	go func() {

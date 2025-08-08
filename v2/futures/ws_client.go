@@ -100,7 +100,7 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 	if err != nil {
 		return nil, nil, nil
 	}
-	c.SetReadLimit(655350)
+	c.SetReadLimit(wsReadLimit)
 	doneC := make(chan struct{})
 	stopC := make(chan struct{})
 	disconnectedC := make(chan struct{})
