@@ -36,7 +36,7 @@ type _ResponseMap struct {
 	d    map[string]chan *WsApiResponse
 }
 
-func (m _ResponseMap) LoadAndDelete(id string) chan *WsApiResponse {
+func (m *_ResponseMap) LoadAndDelete(id string) chan *WsApiResponse {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	if a := m.d[id]; a != nil {
@@ -46,7 +46,7 @@ func (m _ResponseMap) LoadAndDelete(id string) chan *WsApiResponse {
 	return nil
 }
 
-func (m _ResponseMap) Set(id string, ch chan *WsApiResponse) {
+func (m *_ResponseMap) Set(id string, ch chan *WsApiResponse) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.d[id] = ch
