@@ -1286,3 +1286,8 @@ func (c *Client) NewSolStakingService() *SolStakingService {
 func (c *Client) NewSolRedeemService() *SolRedeemService {
 	return &SolRedeemService{c: c}
 }
+
+// NewCommissionRateService returns commission rate
+func (c *Client) NewCommissionRateService() *CommissionRateService {
+	return &CommissionRateService{c: c}
+}
