@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -271,6 +272,7 @@ type doFunc func(req *http.Request) (*http.Response, error)
 
 // Client define API client
 type Client struct {
+	sync.Mutex
 	APIKey     string
 	SecretKey  string
 	BaseURL    string

@@ -277,7 +277,10 @@ func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOptio
 	c.debug("request: %#v", req)
 
 	apiResponses.Set(id, ch)
+	c.Lock()
 	err = c.Conn.WriteJSON(req)
+	c.Unlock()
+
 	//f := c.do
 	//if f == nil {
 	//	f = c.HTTPClient.Do
