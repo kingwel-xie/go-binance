@@ -650,3 +650,170 @@ func (s *CancelAllOpenOrdersService) Do(ctx context.Context, opts ...RequestOpti
 	}
 	return nil
 }
+
+// ListUserLiquidationOrdersService lists user's liquidation orders
+type ListUserLiquidationOrdersService struct {
+	c             *Client
+	which         string // 'um' or 'cm'
+	symbol        *string
+	autoCloseType ForceOrderCloseType
+	startTime     *int64
+	endTime       *int64
+	limit         *int
+}
+
+// Which set which product
+func (s *ListUserLiquidationOrdersService) Which(which string) *ListUserLiquidationOrdersService {
+	s.which = which
+	return s
+}
+
+// Symbol set symbol
+func (s *ListUserLiquidationOrdersService) Symbol(symbol string) *ListUserLiquidationOrdersService {
+	s.symbol = &symbol
+	return s
+}
+
+// AutoCloseType set symbol
+func (s *ListUserLiquidationOrdersService) AutoCloseType(autoCloseType ForceOrderCloseType) *ListUserLiquidationOrdersService {
+	s.autoCloseType = autoCloseType
+	return s
+}
+
+// StartTime set startTime
+func (s *ListUserLiquidationOrdersService) StartTime(startTime int64) *ListUserLiquidationOrdersService {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime set endTime
+func (s *ListUserLiquidationOrdersService) EndTime(endTime int64) *ListUserLiquidationOrdersService {
+	s.endTime = &endTime
+	return s
+}
+
+// Limit set limit
+func (s *ListUserLiquidationOrdersService) Limit(limit int) *ListUserLiquidationOrdersService {
+	s.limit = &limit
+	return s
+}
+
+// Do send request
+func (s *ListUserLiquidationOrdersService) Do(ctx context.Context, opts ...RequestOption) (res []*UserLiquidationOrder, err error) {
+	if s.which == "" {
+		return nil, errWhichMissing
+	}
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: fmt.Sprintf("/papi/v1/%s/forceOrders", s.which),
+		secType:  secTypeSigned,
+	}
+
+	r.setParam("autoCloseType", s.autoCloseType)
+	if s.symbol != nil {
+		r.setParam("symbol", *s.symbol)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	if s.limit != nil {
+		r.setParam("limit", *s.limit)
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []*UserLiquidationOrder{}, err
+	}
+	res = make([]*UserLiquidationOrder, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return []*UserLiquidationOrder{}, err
+	}
+	return res, nil
+}
+
+// UserLiquidationOrder defines user's liquidation order
+type UserLiquidationOrder struct {
+	OrderId       int64  `json:"orderId"`
+	Symbol        string `json:"symbol"`
+	Pair          string `json:"pair"` // CM only
+	Status        string `json:"status"`
+	ClientOrderId string `json:"clientOrderId"`
+	Price         string `json:"price"`
+	AvgPrice      string `json:"avgPrice"`
+	OrigQty       string `json:"origQty"`
+	ExecutedQty   string `json:"executedQty"`
+	CumQuote      string `json:"cumQuote"` // UM
+	CumBase       string `json:"cumBase"`  // CM
+	TimeInForce   string `json:"timeInForce"`
+	Type          string `json:"type"`
+	ReduceOnly    bool   `json:"reduceOnly"`
+	Side          string `json:"side"`
+	PositionSide  string `json:"positionSide"`
+	OrigType      string `json:"origType"`
+	Time          int64  `json:"time"`
+	UpdateTime    int64  `json:"updateTime"`
+}
+
+// ListMarginForceOrdersService lists margin liquidation orders
+type ListMarginForceOrdersService struct {
+	c         *Client
+	startTime *int64
+	endTime   *int64
+}
+
+// StartTime set startTime
+func (s *ListMarginForceOrdersService) StartTime(startTime int64) *ListMarginForceOrdersService {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime set endTime
+func (s *ListMarginForceOrdersService) EndTime(endTime int64) *ListMarginForceOrdersService {
+	s.endTime = &endTime
+	return s
+}
+
+// Do send request
+func (s *ListMarginForceOrdersService) Do(ctx context.Context, opts ...RequestOption) (res *MarginForceOrders, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/papi/v1/margin/forceOrders",
+		secType:  secTypeSigned,
+	}
+
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	r.setParam("size", 100)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(MarginForceOrders)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+type MarginForceOrders struct {
+	Rows []struct {
+		AvgPrice    string `json:"avgPrice"`
+		ExecutedQty string `json:"executedQty"`
+		OrderId     int    `json:"orderId"`
+		Price       string `json:"price"`
+		Qty         string `json:"qty"`
+		Side        string `json:"side"`
+		Symbol      string `json:"symbol"`
+		TimeInForce string `json:"timeInForce"`
+		UpdatedTime int64  `json:"updatedTime"`
+	} `json:"rows"`
+	Total int `json:"total"`
+}

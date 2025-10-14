@@ -780,6 +780,10 @@ func (c *Client) NewIsolatedMarginTransferService() *IsolatedMarginTransferServi
 	return &IsolatedMarginTransferService{c: c}
 }
 
+func (c *Client) NewListMarginLiquidationRecords() *ListMarginLiquidationRecords {
+	return &ListMarginLiquidationRecords{c: c}
+}
+
 // NewGetMarginAssetService init get margin asset service
 func (c *Client) NewGetMarginAssetService() *GetMarginAssetService {
 	return &GetMarginAssetService{c: c}

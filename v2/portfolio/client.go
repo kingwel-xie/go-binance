@@ -527,3 +527,13 @@ func (c *Client) NewRepayService() *RepayService {
 func (c *Client) NewGetInterestHistoryService() *GetInterestHistoryService {
 	return &GetInterestHistoryService{c: c}
 }
+
+// NewListUserLiquidationOrdersService init list user's liquidation orders service
+func (c *Client) NewListUserLiquidationOrdersService() *ListUserLiquidationOrdersService {
+	return &ListUserLiquidationOrdersService{c: c}
+}
+
+// NewListMarginForceOrdersService init list margin force orders service
+func (c *Client) NewListMarginForceOrdersService() *ListMarginForceOrdersService {
+	return &ListMarginForceOrdersService{c: c}
+}

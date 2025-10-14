@@ -1139,3 +1139,69 @@ func (s *IsolatedMarginTransferService) Do(ctx context.Context, opts ...RequestO
 	}
 	return res, nil
 }
+
+// ListMarginLiquidationRecords lists margin liquidation records
+type ListMarginLiquidationRecords struct {
+	c              *Client
+	isolatedSymbol *string
+	startTime      *int64
+	endTime        *int64
+}
+
+// StartTime set startTime
+func (s *ListMarginLiquidationRecords) StartTime(startTime int64) *ListMarginLiquidationRecords {
+	s.startTime = &startTime
+	return s
+}
+
+// EndTime set endTime
+func (s *ListMarginLiquidationRecords) EndTime(endTime int64) *ListMarginLiquidationRecords {
+	s.endTime = &endTime
+	return s
+}
+
+// Do send request
+func (s *ListMarginLiquidationRecords) Do(ctx context.Context, opts ...RequestOption) (res *MarginLiquidationRecords, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/margin/forceLiquidationRec",
+		secType:  secTypeSigned,
+	}
+
+	if s.isolatedSymbol != nil {
+		r.setParam("isolatedSymbol", s.isolatedSymbol)
+	}
+	if s.startTime != nil {
+		r.setParam("startTime", *s.startTime)
+	}
+	if s.endTime != nil {
+		r.setParam("endTime", *s.endTime)
+	}
+	r.setParam("size", 100)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(MarginLiquidationRecords)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+type MarginLiquidationRecords struct {
+	Rows []struct {
+		AvgPrice    string `json:"avgPrice"`
+		ExecutedQty string `json:"executedQty"`
+		OrderId     int    `json:"orderId"`
+		Price       string `json:"price"`
+		Qty         string `json:"qty"`
+		Side        string `json:"side"`
+		Symbol      string `json:"symbol"`
+		TimeInForce string `json:"timeInForce"`
+		IsIsolated  bool   `json:"isIsolated"`
+		UpdatedTime int64  `json:"updatedTime"`
+	} `json:"rows"`
+	Total int `json:"total"`
+}
