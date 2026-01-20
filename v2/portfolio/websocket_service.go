@@ -26,20 +26,20 @@ func getWsEndpoint() string {
 
 // WsUserDataEvent define user data event
 type WsUserDataEvent struct {
-	Event                 UserDataEventType     `json:"e"`
-	BusinessLine          string                `json:"fs"` // UM or CM
-	Time                  int64                 `json:"E"`
-	TransactionTime       int64                 `json:"T"`
-	AccountUpdate         WsAccountUpdate       `json:"a"`
-	OrderTradeUpdate      WsOrderTradeUpdate    `json:"o"`
-	AccountConfigUpdate   WsAccountConfigUpdate `json:"ac"`
+	Event                 UserDataEventType       `json:"e"`
+	BusinessLine          string                  `json:"fs"` // UM or CM
+	Time                  int64                   `json:"E"`
+	TransactionTime       int64                   `json:"T"`
+	AccountUpdate         WsAccountUpdate         `json:"a"`
+	OrderTradeUpdate      WsOrderTradeUpdate      `json:"o"`
+	AccountConfigUpdate   WsAccountConfigUpdate   `json:"ac"`
+	MarginCondOrderUpdate WsMarginCondOrderUpdate `json:"so"`
 	RiskLevelChange       WsRiskLevelChange
 	MarginOpenLoss        WsMarginOpenLoss
 	MarginLiabilityChange WsMarginLiabilityChange
 	MarginAccountUpdate   WsMarginAccountUpdate
 	MarginBalanceUpdate   WsMarginBalanceUpdate
 	MarginOrderUpdate     WsMarginOrderUpdate
-	MarginCondOrderUpdate WsMarginCondOrderUpdate
 }
 
 // WsAccountUpdate define account update
@@ -252,6 +252,8 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 			fallthrough
 		case UserDataEventTypeOrderTradeUpdate:
 			fallthrough
+		case UserDataEventTypeCondOrderUpdate:
+			fallthrough
 		case UserDataEventTypeAccountConfigUpdate:
 			err = json.Unmarshal(message, &event)
 			if err != nil {
@@ -292,12 +294,6 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 			}
 		case UserDataEventTypeMarginOrderUpdate:
 			err = json.Unmarshal(message, &event.MarginOrderUpdate)
-			if err != nil {
-				errHandler(err)
-				return
-			}
-		case UserDataEventTypeMarginCondOrderUpdate:
-			err = json.Unmarshal(message, &event.MarginCondOrderUpdate)
 			if err != nil {
 				errHandler(err)
 				return
