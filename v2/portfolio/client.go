@@ -162,6 +162,7 @@ const (
 	UserDataEventTypeMarginAccountUpdate   UserDataEventType = "outboundAccountPosition"
 	UserDataEventTypeMarginBalanceUpdate   UserDataEventType = "balanceUpdate"
 	UserDataEventTypeMarginOrderUpdate     UserDataEventType = "executionReport"
+	UserDataEventTypeMarginCondOrderUpdate     UserDataEventType = "CONDITIONAL_ORDER_TRADE_UPDATE"
 
 	UserDataEventReasonTypeDeposit             UserDataEventReasonType = "DEPOSIT"
 	UserDataEventReasonTypeWithdraw            UserDataEventReasonType = "WITHDRAW"

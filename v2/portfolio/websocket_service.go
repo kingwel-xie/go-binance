@@ -39,6 +39,7 @@ type WsUserDataEvent struct {
 	MarginAccountUpdate   WsMarginAccountUpdate
 	MarginBalanceUpdate   WsMarginBalanceUpdate
 	MarginOrderUpdate     WsMarginOrderUpdate
+	MarginCondOrderUpdate WsMarginCondOrderUpdate
 }
 
 // WsAccountUpdate define account update
@@ -202,6 +203,31 @@ type WsMarginOrderUpdate struct {
 	UsedSor                    bool   `json:"uS"` // Appears for orders that used SOR
 }
 
+// WsMarginCondOrderUpdate define conditional order update
+type WsMarginCondOrderUpdate struct {
+	Symbol        string          `json:"s"`
+	ClientOrderId string          `json:"c"`
+	StrategyId    int             `json:"si"`
+	Side          string          `json:"S"`
+	StrategyType  string          `json:"st"`
+	TimeInForce   TimeInForceType `json:"f"`
+	Volume        string          `json:"q"`
+	Price         string          `json:"p"`
+	Sp            string          `json:"sp"`
+	OrderStatus   string          `json:"os"`
+	T             int64           `json:"T"`
+	Ut            int64           `json:"ut"`
+	R             bool            `json:"R"`
+	Wt            string          `json:"wt"`
+	Ps            string          `json:"ps"`
+	Cp            bool            `json:"cp"`
+	AP            string          `json:"AP"`
+	Cr            string          `json:"cr"`
+	I             int             `json:"i"`
+	V             string          `json:"V"`
+	Gtd           int             `json:"gtd"`
+}
+
 // WsUserDataHandler handle WsUserDataEvent
 type WsUserDataHandler func(event *WsUserDataEvent)
 
@@ -266,6 +292,12 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 			}
 		case UserDataEventTypeMarginOrderUpdate:
 			err = json.Unmarshal(message, &event.MarginOrderUpdate)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+		case UserDataEventTypeMarginCondOrderUpdate:
+			err = json.Unmarshal(message, &event.MarginCondOrderUpdate)
 			if err != nil {
 				errHandler(err)
 				return
