@@ -519,19 +519,19 @@ func (s *CreateMarginOCOService) StopClientOrderID(stopClientOrderID string) *Cr
 	return s
 }
 
-// StopPrice set stop price
+// StopPrice set Stop price
 func (s *CreateMarginOCOService) StopPrice(stopPrice string) *CreateMarginOCOService {
 	s.stopPrice = &stopPrice
 	return s
 }
 
-// StopLimitPrice set stop limit price
+// StopLimitPrice set Stop limit price
 func (s *CreateMarginOCOService) StopLimitPrice(stopLimitPrice string) *CreateMarginOCOService {
 	s.stopLimitPrice = &stopLimitPrice
 	return s
 }
 
-// StopIcebergQty set stop limit price
+// StopIcebergQty set Stop limit price
 func (s *CreateMarginOCOService) StopIcebergQty(stopIcebergQty string) *CreateMarginOCOService {
 	s.stopIcebergQty = &stopIcebergQty
 	return s

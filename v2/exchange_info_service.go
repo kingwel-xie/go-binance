@@ -149,8 +149,8 @@ type MarketLotSizeFilter struct {
 	StepSize    string `json:"stepSize"`
 }
 
-// Spot trading supports tracking stop orders
-// Tracking stop loss sets an automatic trigger price based on market price using a new parameter trailingDelta
+// Spot trading supports tracking Stop orders
+// Tracking Stop loss sets an automatic trigger price based on market price using a new parameter trailingDelta
 type TrailingDeltaFilter struct {
 	MinTrailingAboveDelta int `json:"minTrailingAboveDelta"`
 	MaxTrailingAboveDelta int `json:"maxTrailingAboveDelta"`

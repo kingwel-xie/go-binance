@@ -89,7 +89,13 @@ func getWsAPIEndpoint() string {
 	return WsAPIMainURL
 }
 
-func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
+type WsConnection struct {
+	*websocket.Conn
+	done chan struct{}
+	stop chan struct{}
+}
+
+func makeConn() *WsConnection {
 	Dialer := websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
 		HandshakeTimeout:  45 * time.Second,
@@ -98,7 +104,7 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 
 	c, _, err := Dialer.Dial(getWsAPIEndpoint(), nil)
 	if err != nil {
-		return nil, nil, nil
+		return nil
 	}
 	c.SetReadLimit(wsReadLimit)
 	doneC := make(chan struct{})
@@ -147,7 +153,9 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 		}
 	}()
 
-	return c, stopC, disconnectedC
+	return &WsConnection{
+		c, stopC, disconnectedC,
+	}
 }
 
 func (c *Client) handleDisconnected(ch chan struct{}) {
@@ -173,13 +181,12 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 			//	log.Info("%s stream, context terminated...", sm.name)
 			//	return
 			case <-ticker.C:
-				conn, stopC, disconnectedC := makeConn()
+				conn := makeConn()
 				if conn != nil {
-					c.Conn = conn
-					c.StopC = stopC
+					c.WsConn = conn
 					c.wsState = WsConnected
 					// well done, break the loop
-					c.handleDisconnected(disconnectedC)
+					c.handleDisconnected(conn.stop)
 
 					c.debug("reconnected with %s", c.BaseURL)
 					return
@@ -193,7 +200,7 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 func (c *Client) Close() {
 	if c.wsState == WsConnected {
 		c.wsState = WsAdminClosing
-		close(c.StopC)
+		close(c.WsConn.stop)
 	}
 }
 
@@ -250,7 +257,7 @@ func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
 		if err != nil {
 			return err
 		}
-		r.wsParams[signatureKey] = fmt.Sprintf("%x", (mac.Sum(nil)))
+		r.wsParams[signatureKey] = fmt.Sprintf("%x", mac.Sum(nil))
 	}
 
 	c.debug("ws-method: %s, params: %v", r.wsMethod, r.wsParams)
@@ -278,10 +285,10 @@ func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOptio
 	c.debug("request: %#v", req)
 
 	apiResponses.Set(id, ch)
-
 	c.Lock()
-	err = c.Conn.WriteJSON(req)
+	err = c.WsConn.WriteJSON(req)
 	c.Unlock()
+
 	//f := c.do
 	//if f == nil {
 	//	f = c.HTTPClient.Do

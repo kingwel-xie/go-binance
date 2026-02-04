@@ -262,19 +262,19 @@ func (s *CreateOCOService) StopClientOrderID(stopClientOrderID string) *CreateOC
 	return s
 }
 
-// StopPrice set stop price
+// StopPrice set Stop price
 func (s *CreateOCOService) StopPrice(stopPrice string) *CreateOCOService {
 	s.stopPrice = &stopPrice
 	return s
 }
 
-// StopLimitPrice set stop limit price
+// StopLimitPrice set Stop limit price
 func (s *CreateOCOService) StopLimitPrice(stopLimitPrice string) *CreateOCOService {
 	s.stopLimitPrice = &stopLimitPrice
 	return s
 }
 
-// StopIcebergQty set stop limit price
+// StopIcebergQty set Stop limit price
 func (s *CreateOCOService) StopIcebergQty(stopIcebergQty string) *CreateOCOService {
 	s.stopIcebergQty = &stopIcebergQty
 	return s

@@ -2,7 +2,10 @@ package binance
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 )
 
 // StartUserStreamService create listen key for user stream service
@@ -75,4 +78,46 @@ func (s *CloseUserStreamService) Do(ctx context.Context, opts ...RequestOption) 
 	r.setFormParam("listenKey", s.listenKey)
 	_, _, err = s.c.callAPI(ctx, r, opts...)
 	return err
+}
+
+func NewDataStreamClient(apiKey, secretKey string, handler WsUserDataHandler, errHandler ErrHandler) (*Client, error) {
+	c := makeConn(handler, errHandler)
+	if c == nil {
+		return nil, fmt.Errorf("error to establish websocket connnetion")
+	}
+
+	client := &Client{
+		APIKey:     apiKey,
+		SecretKey:  secretKey,
+		BaseURL:    getAPIEndpoint(),
+		UserAgent:  "Binance/golang",
+		HTTPClient: http.DefaultClient,
+		Logger:     log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
+		WsURL:      getWsAPIEndpoint(),
+		WsConn:     c,
+		wsState:    WsConnected,
+	}
+	client.handleDisconnected(c.Stop, handler, errHandler)
+
+	r := &request{
+		secType:  secTypeSigned,
+		wsMethod: "userDataStream.subscribe.signature",
+	}
+	data, _, err := client.callWsAPI(context.TODO(), r)
+	if err != nil {
+		return nil, err
+	}
+	res := new(T2)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+
+	//client.Logger.Printf("userdata stream %d\n", res.SubscriptionId)
+
+	return client, nil
+}
+
+type T2 struct {
+	SubscriptionId int `json:"subscriptionId"`
 }

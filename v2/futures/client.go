@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"io"
 	"log"
 	"net/http"
@@ -247,7 +246,7 @@ func getApiEndpoint() string {
 // Services will be created by the form client.NewXXXService().
 func NewClient(apiKey, secretKey string) *Client {
 	wsState := WsInit
-	c, stopC, disconnectedC := makeConn()
+	c := makeConn()
 	if c != nil {
 		wsState = WsConnected
 	}
@@ -259,11 +258,10 @@ func NewClient(apiKey, secretKey string) *Client {
 		HTTPClient: http.DefaultClient,
 		Logger:     log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
 		WsURL:      getWsAPIEndpoint(),
-		Conn:       c,
-		StopC:      stopC,
+		WsConn:     c,
 		wsState:    wsState,
 	}
-	client.handleDisconnected(disconnectedC)
+	client.handleDisconnected(c.stop)
 
 	return client
 }
@@ -283,7 +281,7 @@ type Client struct {
 	TimeOffset int64
 	do         doFunc
 	WsURL      string
-	Conn       *websocket.Conn
+	WsConn     *WsConnection
 	StopC      chan struct{}
 	wsState    WsClientState // init/connecting/connected
 }

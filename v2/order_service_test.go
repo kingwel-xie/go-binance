@@ -678,13 +678,13 @@ func (s *orderServiceTestSuite) TestCancelOCO() {
 		"transactionTime":1614272133000,
 		"symbol":"BTCUSDT",
 		"orders":[
-			{"symbol":"BTCUSDT","orderId":1100,"clientOrderId":"stop-loss-order-id"},
+			{"symbol":"BTCUSDT","orderId":1100,"clientOrderId":"Stop-loss-order-id"},
 			{"symbol":"BTCUSDT","orderId":1010,"clientOrderId":"limit-maker-order-id"}
 		],
 		"orderReports":[
 			{
 				"symbol":"BTCUSDT",
-				"origClientOrderId":"stop-loss-order-id",
+				"origClientOrderId":"Stop-loss-order-id",
 				"orderId":1100,
 				"orderListId":1000,
 				"clientOrderId":"cancel-request-id",
@@ -744,13 +744,13 @@ func (s *orderServiceTestSuite) TestCancelOCO() {
 		TransactionTime:   1614272133000,
 		Symbol:            "BTCUSDT",
 		Orders: []*OCOOrder{
-			{Symbol: "BTCUSDT", OrderID: 1100, ClientOrderID: "stop-loss-order-id"},
+			{Symbol: "BTCUSDT", OrderID: 1100, ClientOrderID: "Stop-loss-order-id"},
 			{Symbol: "BTCUSDT", OrderID: 1010, ClientOrderID: "limit-maker-order-id"},
 		},
 		OrderReports: []*OCOOrderReport{
 			{
 				Symbol:                   "BTCUSDT",
-				OrigClientOrderID:        "stop-loss-order-id",
+				OrigClientOrderID:        "Stop-loss-order-id",
 				OrderID:                  1100,
 				OrderListID:              1000,
 				ClientOrderID:            "cancel-request-id",

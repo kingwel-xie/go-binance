@@ -6,8 +6,10 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/adshao/go-binance/v2/common"
+	"github.com/bitly/go-simplejson"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	jsoniter "github.com/json-iterator/go"
 	"net/http"
 	"sort"
 	"strings"
@@ -88,21 +90,82 @@ func getWsAPIEndpoint() string {
 	return WsAPIMainURL
 }
 
-func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
+type WsConnection struct {
+	*websocket.Conn
+	Done chan struct{}
+	Stop chan struct{}
+}
+
+type _subscription struct {
+	SubscriptionId int                 `json:"subscriptionId"`
+	Event          jsoniter.RawMessage `json:"event"`
+}
+
+func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 	Dialer := websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
 		HandshakeTimeout:  45 * time.Second,
 		EnableCompression: true, // important for huge size message
 	}
 
-	c, _, err := Dialer.Dial(getWsAPIEndpoint(), nil)
-	if err != nil {
-		return nil, nil, nil
+	c, _, err0 := Dialer.Dial(getWsAPIEndpoint(), nil)
+	if err0 != nil {
+		return nil
 	}
 	c.SetReadLimit(wsReadLimit)
 	doneC := make(chan struct{})
 	stopC := make(chan struct{})
 	disconnectedC := make(chan struct{})
+
+	if errHandler == nil {
+		errHandler = func(err error) {
+			fmt.Printf("error happened on websocket %s, %v", getWsAPIEndpoint(), err)
+		}
+	}
+
+	wsHandler := func(message []byte) {
+		j, err := newJSON(message)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+
+		event := new(WsUserDataEvent)
+		err = json.Unmarshal(message, event)
+		if err != nil {
+			errHandler(err)
+			return
+		}
+
+		switch UserDataEventType(j.Get("e").MustString()) {
+		case UserDataEventTypeOutboundAccountPosition:
+			err = json.Unmarshal(message, &event.AccountUpdate)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+		case UserDataEventTypeBalanceUpdate:
+			err = json.Unmarshal(message, &event.BalanceUpdate)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+		case UserDataEventTypeExecutionReport:
+			err = json.Unmarshal(message, &event.OrderUpdate)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+		case UserDataEventTypeListStatus:
+			err = json.Unmarshal(message, &event.OCOUpdate)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+		}
+		handler(event)
+	}
+
 	go func() {
 		// This function will exit either on error from
 		// websocket.Conn.ReadMessage or when the stopC channel is
@@ -129,14 +192,33 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 			_, message, err := c.ReadMessage()
 			if err != nil {
 				if !adminForced {
-					fmt.Println("ws error:", err)
+					errHandler(err)
 				}
 				return
 			}
+			var j *simplejson.Json
+			j, err = newJSON(message)
+			if err != nil {
+				errHandler(err)
+				return
+			}
+
+			// here we check if there is a subscription, otherwise, handle it as a Request/Response
+			if handler != nil {
+				if _, existed := j.CheckGet("subscriptionId"); existed {
+					var subs _subscription
+					err = json.Unmarshal(message, &subs)
+					if err == nil {
+						//event, _ := j.Get("event").MarshalJSON()
+						wsHandler(subs.Event)
+						continue
+					}
+				}
+			}
+
 			res := new(WsApiResponse)
 			err = json.Unmarshal(message, res)
 			if err != nil {
-				//fmt.Println("unmarshal error:", err)
 				return
 			}
 			if a := apiResponses.LoadAndDelete(res.Id); a != nil {
@@ -146,10 +228,12 @@ func makeConn() (*websocket.Conn, chan struct{}, chan struct{}) {
 		}
 	}()
 
-	return c, stopC, disconnectedC
+	return &WsConnection{
+		c, stopC, disconnectedC,
+	}
 }
 
-func (c *Client) handleDisconnected(ch chan struct{}) {
+func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHandler, errHandler ErrHandler) {
 	go func() {
 		select {
 		case <-ch:
@@ -172,13 +256,12 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 			//	log.Info("%s stream, context terminated...", sm.name)
 			//	return
 			case <-ticker.C:
-				conn, stopC, disconnectedC := makeConn()
+				conn := makeConn(nil, nil)
 				if conn != nil {
-					c.Conn = conn
-					c.StopC = stopC
+					c.WsConn = conn
 					c.wsState = WsConnected
 					// well done, break the loop
-					c.handleDisconnected(disconnectedC)
+					c.handleDisconnected(conn.Stop, eventHandler, errHandler)
 
 					c.debug("reconnected with %s", c.BaseURL)
 					return
@@ -192,7 +275,7 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 func (c *Client) Close() {
 	if c.wsState == WsConnected {
 		c.wsState = WsAdminClosing
-		close(c.StopC)
+		close(c.WsConn.Stop)
 	}
 }
 
@@ -249,7 +332,7 @@ func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
 		if err != nil {
 			return err
 		}
-		r.wsParams[signatureKey] = fmt.Sprintf("%x", (mac.Sum(nil)))
+		r.wsParams[signatureKey] = fmt.Sprintf("%x", mac.Sum(nil))
 	}
 
 	c.debug("ws-method: %s, params: %v", r.wsMethod, r.wsParams)
@@ -278,7 +361,7 @@ func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOptio
 
 	apiResponses.Set(id, ch)
 	c.Lock()
-	err = c.Conn.WriteJSON(req)
+	err = c.WsConn.WriteJSON(req)
 	c.Unlock()
 
 	//f := c.do

@@ -534,7 +534,7 @@ type WsOrderUpdate struct {
 	SelfTradePreventionMode string          `json:"V"`
 
 	//These are fields that appear in the payload only if certain conditions are met.
-	TrailingDelta              int64  `json:"d"` // Appears only for trailing stop orders.
+	TrailingDelta              int64  `json:"d"` // Appears only for trailing Stop orders.
 	TrailingTime               int64  `json:"D"`
 	StrategyId                 int64  `json:"j"` // Appears only if the strategyId parameter was provided upon order placement.
 	StrategyType               int64  `json:"J"` // Appears only if the strategyType parameter was provided upon order placement.
