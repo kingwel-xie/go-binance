@@ -80,15 +80,15 @@ func (s *CloseUserStreamService) Do(ctx context.Context, opts ...RequestOption) 
 	return err
 }
 
-func NewDataStreamClient(apiKey, secretKey string, handler WsUserDataHandler, errHandler ErrHandler) (*Client, error) {
+func NewDataStreamClient(oc *Client, handler WsUserDataHandler, errHandler ErrHandler) (*Client, error) {
 	c := makeConn(handler, errHandler)
 	if c == nil {
 		return nil, fmt.Errorf("error to establish websocket connnetion")
 	}
 
 	client := &Client{
-		APIKey:     apiKey,
-		SecretKey:  secretKey,
+		APIKey:     oc.APIKey,
+		SecretKey:  oc.SecretKey,
 		BaseURL:    getAPIEndpoint(),
 		UserAgent:  "Binance/golang",
 		HTTPClient: http.DefaultClient,
@@ -97,7 +97,7 @@ func NewDataStreamClient(apiKey, secretKey string, handler WsUserDataHandler, er
 		WsConn:     c,
 		wsState:    WsConnected,
 	}
-	client.handleDisconnected(c.Stop, handler, errHandler)
+	client.handleDisconnected(c.Done, handler, errHandler)
 
 	r := &request{
 		secType:  secTypeSigned,
@@ -107,7 +107,7 @@ func NewDataStreamClient(apiKey, secretKey string, handler WsUserDataHandler, er
 	if err != nil {
 		return nil, err
 	}
-	res := new(T2)
+	res := new(_SubscriptionResponse)
 	err = json.Unmarshal(data, res)
 	if err != nil {
 		return nil, err
@@ -118,6 +118,6 @@ func NewDataStreamClient(apiKey, secretKey string, handler WsUserDataHandler, er
 	return client, nil
 }
 
-type T2 struct {
+type _SubscriptionResponse struct {
 	SubscriptionId int `json:"subscriptionId"`
 }

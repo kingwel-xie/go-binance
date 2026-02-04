@@ -6,10 +6,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/adshao/go-binance/v2/common"
-	"github.com/bitly/go-simplejson"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	jsoniter "github.com/json-iterator/go"
 	"net/http"
 	"sort"
 	"strings"
@@ -97,8 +95,8 @@ type WsConnection struct {
 }
 
 type _subscription struct {
-	SubscriptionId int                 `json:"subscriptionId"`
-	Event          jsoniter.RawMessage `json:"event"`
+	SubscriptionId int        `json:"subscriptionId"`
+	Event          ObjectType `json:"event"`
 }
 
 func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
@@ -196,25 +194,6 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 				}
 				return
 			}
-			var j *simplejson.Json
-			j, err = newJSON(message)
-			if err != nil {
-				errHandler(err)
-				return
-			}
-
-			// here we check if there is a subscription, otherwise, handle it as a Request/Response
-			if handler != nil {
-				if _, existed := j.CheckGet("subscriptionId"); existed {
-					var subs _subscription
-					err = json.Unmarshal(message, &subs)
-					if err == nil {
-						//event, _ := j.Get("event").MarshalJSON()
-						wsHandler(subs.Event)
-						continue
-					}
-				}
-			}
 
 			res := new(WsApiResponse)
 			err = json.Unmarshal(message, res)
@@ -224,6 +203,16 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 			if a := apiResponses.LoadAndDelete(res.Id); a != nil {
 				a <- res
 				close(a)
+			} else {
+				// handle it as a subscription event then
+				if handler != nil {
+					var subs _subscription
+					err = json.Unmarshal(message, &subs)
+					if err != nil {
+						return
+					}
+					wsHandler([]byte(subs.Event))
+				}
 			}
 		}
 	}()

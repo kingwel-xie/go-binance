@@ -331,7 +331,7 @@ func NewClient(apiKey, secretKey string) *Client {
 		wsState:    wsState,
 	}
 	if c != nil {
-		client.handleDisconnected(c.Stop, nil, nil)
+		client.handleDisconnected(c.Done, nil, nil)
 	}
 
 	return client

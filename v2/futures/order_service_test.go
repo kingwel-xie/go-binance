@@ -530,7 +530,7 @@ func (s *orderServiceTestSuite) assertCancelOrderResponseEqual(e, a *CancelOrder
 func (s *orderServiceTestSuite) TestCancelAllOpenOrders() {
 	data := []byte(`{
 		"code": "200",
-		"msg": "The operation of cancel all open order is done."
+		"msg": "The operation of cancel all open order is Done."
 	}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()

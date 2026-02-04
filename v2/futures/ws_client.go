@@ -91,8 +91,8 @@ func getWsAPIEndpoint() string {
 
 type WsConnection struct {
 	*websocket.Conn
-	done chan struct{}
-	stop chan struct{}
+	Done chan struct{}
+	Stop chan struct{}
 }
 
 func makeConn() *WsConnection {
@@ -185,8 +185,8 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 				if conn != nil {
 					c.WsConn = conn
 					c.wsState = WsConnected
-					// well done, break the loop
-					c.handleDisconnected(conn.stop)
+					// well Done, break the loop
+					c.handleDisconnected(conn.Stop)
 
 					c.debug("reconnected with %s", c.BaseURL)
 					return
@@ -200,7 +200,7 @@ func (c *Client) handleDisconnected(ch chan struct{}) {
 func (c *Client) Close() {
 	if c.wsState == WsConnected {
 		c.wsState = WsAdminClosing
-		close(c.WsConn.stop)
+		close(c.WsConn.Stop)
 	}
 }
 
