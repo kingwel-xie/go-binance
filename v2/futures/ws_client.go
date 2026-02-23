@@ -109,7 +109,6 @@ func makeConn() *WsConnection {
 	c.SetReadLimit(wsReadLimit)
 	doneC := make(chan struct{})
 	stopC := make(chan struct{})
-	disconnectedC := make(chan struct{})
 	go func() {
 		// This function will exit either on error from
 		// websocket.Conn.ReadMessage or when the stopC channel is
@@ -127,7 +126,6 @@ func makeConn() *WsConnection {
 			case <-stopC:
 				adminForced = true
 			case <-doneC:
-				close(disconnectedC)
 			}
 			_ = c.Close()
 
@@ -154,7 +152,7 @@ func makeConn() *WsConnection {
 	}()
 
 	return &WsConnection{
-		c, stopC, disconnectedC,
+		c, doneC, stopC,
 	}
 }
 

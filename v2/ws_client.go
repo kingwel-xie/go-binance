@@ -113,7 +113,6 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 	c.SetReadLimit(wsReadLimit)
 	doneC := make(chan struct{})
 	stopC := make(chan struct{})
-	disconnectedC := make(chan struct{})
 
 	if errHandler == nil {
 		errHandler = func(err error) {
@@ -181,7 +180,6 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 			case <-stopC:
 				adminForced = true
 			case <-doneC:
-				close(disconnectedC)
 			}
 			_ = c.Close()
 
@@ -218,7 +216,7 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 	}()
 
 	return &WsConnection{
-		c, stopC, disconnectedC,
+		c, doneC, stopC,
 	}
 }
 
