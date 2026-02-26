@@ -248,7 +248,7 @@ func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHan
 					c.WsConn = conn
 					c.wsState = WsConnected
 					// well done, break the loop
-					c.handleDisconnected(conn.Stop, eventHandler, errHandler)
+					c.handleDisconnected(conn.Done, eventHandler, errHandler)
 
 					c.debug("reconnected with %s", c.BaseURL)
 					return
