@@ -116,7 +116,7 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 
 	if errHandler == nil {
 		errHandler = func(err error) {
-			fmt.Printf("error happened on websocket %s, %v", getWsAPIEndpoint(), err)
+			fmt.Printf("error websocket %s, %v\n", getWsAPIEndpoint(), err)
 		}
 	}
 

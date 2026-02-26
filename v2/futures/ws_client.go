@@ -134,7 +134,7 @@ func makeConn() *WsConnection {
 			_, message, err := c.ReadMessage()
 			if err != nil {
 				if !adminForced {
-					fmt.Println("ws error:", err)
+					fmt.Printf("error websocket %s, %v\n", getWsAPIEndpoint(), err)
 				}
 				return
 			}
