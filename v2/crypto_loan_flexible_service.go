@@ -161,10 +161,11 @@ type LoanBorrowFlexibleResponse struct {
 
 // LoanRepayFlexibleService repay flexible product.
 type LoanRepayFlexibleService struct {
-	c              *Client
-	loanCoin       string
-	collateralCoin string
-	repayAmount    string
+	c                *Client
+	loanCoin         string
+	collateralCoin   string
+	repayAmount      string
+	collateralReturn bool
 }
 
 // LoanCoin sets the loanCoin parameter (MANDATORY).
@@ -185,6 +186,12 @@ func (s *LoanRepayFlexibleService) RepayAmount(repayAmount string) *LoanRepayFle
 	return s
 }
 
+// CollateralReturn sets the collateralReturn parameter (OPTIONAL), true: to SPOT, false: KEEP, lower LTV.
+func (s *LoanRepayFlexibleService) CollateralReturn(collateralReturn bool) *LoanRepayFlexibleService {
+	s.collateralReturn = collateralReturn
+	return s
+}
+
 // Do sends the request.
 func (s *LoanRepayFlexibleService) Do(ctx context.Context) (res *LoanRepayFlexibleResponse, err error) {
 	r := &request{
@@ -195,6 +202,7 @@ func (s *LoanRepayFlexibleService) Do(ctx context.Context) (res *LoanRepayFlexib
 	r.setParam("loanCoin", s.loanCoin)
 	r.setParam("collateralCoin", s.collateralCoin)
 	r.setParam("repayAmount", s.repayAmount)
+	r.setParam("collateralReturn", s.collateralReturn)
 
 	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
