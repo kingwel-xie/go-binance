@@ -1063,6 +1063,11 @@ func (c *Client) NewGetUserAsset() *GetUserAssetService {
 	return &GetUserAssetService{c: c}
 }
 
+// NewGetAccountInfoService init the service for fetching account info detail (incl. VIP level)
+func (c *Client) NewGetAccountInfoService() *GetAccountInfoService {
+	return &GetAccountInfoService{c: c}
+}
+
 // NewManagedSubAccountDepositService Deposit Assets Into The Managed Sub-account（For Investor Master Account）
 func (c *Client) NewManagedSubAccountDepositService() *ManagedSubAccountDepositService {
 	return &ManagedSubAccountDepositService{c: c}
