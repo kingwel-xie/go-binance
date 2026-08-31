@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"github.com/adshao/go-binance/v2/common"
 	"github.com/google/uuid"
@@ -29,6 +30,12 @@ var (
 	WsAPIMainURL    = "wss://ws-api.binance.com:443/ws-api/v3"
 	WsAPITestnetURL = "wss://testnet.binance.vision/ws-api/v3"
 )
+
+// ErrWsAPIUnconfirmed marks a WS API call whose request frame was written to
+// the socket but no response arrived before the deadline. The exchange may
+// have accepted the request (e.g. an order that is now live), so the caller
+// must reconcile the actual state instead of treating it as a plain failure.
+var ErrWsAPIUnconfirmed = errors.New("ws api request written but no response before deadline")
 
 type _ResponseMap struct {
 	lock sync.Mutex
@@ -360,16 +367,15 @@ func (c *Client) callWsAPI(ctx context.Context, r *request, opts ...RequestOptio
 		return nil, nil, err
 	}
 
-	// timeout context
-	ctx2, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	// bound the response wait: cap it at 15s even when the caller's ctx has
+	// no deadline (or a very long one), while still honoring a shorter one
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	select {
 	case <-ctx.Done():
-		return nil, nil, ctx.Err()
-
-	case <-ctx2.Done():
-		return nil, nil, ctx2.Err()
+		// the request was already written; the outcome is unknown
+		return nil, nil, fmt.Errorf("%w: %v", ErrWsAPIUnconfirmed, ctx.Err())
 
 	case res := <-ch:
 		c.debug("response status code: %d", res.Status)
