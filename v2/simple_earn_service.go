@@ -223,7 +223,7 @@ func (s *SubscribeSimpleEarnFlexibleService) Do(ctx context.Context) (res *Subsc
 	}
 	r.setParam("productId", s.productId)
 	r.setParam("amount", s.amount)
-	r.setParam("sourceAccount", "ALL")
+	r.setParam("sourceAccount", "SPOT")
 
 	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
@@ -271,7 +271,7 @@ func (s *SubscribeSimpleEarnLockedService) Do(ctx context.Context) (res *Subscri
 	}
 	r.setParam("projectId", s.projectId)
 	r.setParam("amount", s.amount)
-	r.setParam("sourceAccount", "ALL")
+	r.setParam("sourceAccount", "SPOT")
 
 	data, _, err := s.c.callAPI(ctx, r)
 	if err != nil {
