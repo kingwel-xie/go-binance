@@ -100,7 +100,7 @@ func (s *tradeServiceTestSuite) TestHistoricalTrades() {
 		s.assertRequestEqual(e, r)
 	})
 
-	trades, err := s.client.NewHistoricalTradesService().Symbol(symbol).
+	trades, err := s.client.NewHistoricalTradesService().Which("um").Symbol(symbol).
 		Limit(limit).FromID(fromID).Do(newContext())
 	r := s.r()
 	r.NoError(err)

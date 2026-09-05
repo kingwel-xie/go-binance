@@ -13,10 +13,11 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
-type WsClientState int
+type WsClientState int32
 
 const (
 	WsInit         WsClientState = 0
@@ -233,10 +234,10 @@ func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHan
 		case <-ch:
 		}
 		// if it is triggered by AdminClose, just ignore
-		if c.wsState == WsAdminClosing {
+		if atomic.LoadInt32((*int32)(&c.wsState)) == int32(WsAdminClosing) {
 			return
 		}
-		c.wsState = WsConnecting
+		atomic.StoreInt32((*int32)(&c.wsState), int32(WsConnecting))
 		c.debug("disconnected, try reconnecting later...")
 
 		ticker := time.NewTicker(10 * time.Second)
@@ -253,7 +254,7 @@ func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHan
 				conn := makeConn(nil, nil)
 				if conn != nil {
 					c.WsConn = conn
-					c.wsState = WsConnected
+					atomic.StoreInt32((*int32)(&c.wsState), int32(WsConnected))
 					// well done, break the loop
 					c.handleDisconnected(conn.Done, eventHandler, errHandler)
 
@@ -267,9 +268,10 @@ func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHan
 }
 
 func (c *Client) Close() {
-	if c.wsState == WsConnected {
-		c.wsState = WsAdminClosing
-		close(c.WsConn.Stop)
+	if atomic.CompareAndSwapInt32((*int32)(&c.wsState), int32(WsConnected), int32(WsAdminClosing)) {
+		if c.WsConn != nil {
+			close(c.WsConn.Stop)
+		}
 	}
 }
 
@@ -309,11 +311,20 @@ func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
 		r.wsParams = params{}
 	}
 	// collect params from query & form, construct wsParams
+	// join multi-valued parameters so repeated keys are preserved
 	for k, v := range r.query {
-		r.wsParams[k] = v[0]
+		if len(v) == 1 {
+			r.wsParams[k] = v[0]
+		} else {
+			r.wsParams[k] = strings.Join(v, ",")
+		}
 	}
 	for k, v := range r.form {
-		r.wsParams[k] = v[0]
+		if len(v) == 1 {
+			r.wsParams[k] = v[0]
+		} else {
+			r.wsParams[k] = strings.Join(v, ",")
+		}
 	}
 
 	if r.secType == secTypeSigned {

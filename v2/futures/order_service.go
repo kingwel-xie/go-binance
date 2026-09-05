@@ -918,7 +918,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 			return nil, err
 		}
 
-		if e.Code > 0 || e.Message != "" {
+		if e.IsValid() {
 			batchCreateOrdersResponse.Errors[i] = e
 			continue
 		}

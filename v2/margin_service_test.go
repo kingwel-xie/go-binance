@@ -457,14 +457,14 @@ func (s *marginTestSuite) assertUserAssetEqual(e, a UserAsset) {
 }
 
 func (s *marginTestSuite) TestGetMarginAsset() {
-	data := []byte(`{
+	data := []byte(`[{
 		"assetFullName": "Binance Coin",
 		"assetName": "BNB",
 		"isBorrowable": false,
 		"isMortgageable": true,
 		"userMinBorrow": "0.00000000",
 		"userMinRepay": "0.00000000"
-  	}`)
+  	}]`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
 	asset := "BNB"
@@ -476,22 +476,22 @@ func (s *marginTestSuite) TestGetMarginAsset() {
 	res, err := s.client.NewGetMarginAssetService().Asset(asset).Do(newContext())
 	s.r().NoError(err)
 	e := &MarginAsset{
-		FullName:      "Binance Coin",
-		Name:          asset,
-		Borrowable:    false,
-		Mortgageable:  true,
-		UserMinBorrow: "0.00000000",
-		UserMinRepay:  "0.00000000",
+		AssetFullName:  "Binance Coin",
+		AssetName:      asset,
+		IsBorrowable:   false,
+		IsMortgageable: true,
+		UserMinBorrow:  "0.00000000",
+		UserMinRepay:   "0.00000000",
 	}
-	s.assertMarginAssetEqual(e, res)
+	s.assertMarginAssetEqual(e, res[0])
 }
 
 func (s *marginTestSuite) assertMarginAssetEqual(e, a *MarginAsset) {
 	r := s.r()
-	r.Equal(e.FullName, a.FullName, "FullName")
-	r.Equal(e.Name, a.Name, "Name")
-	r.Equal(e.Borrowable, a.Borrowable, "Borrowable")
-	r.Equal(e.Mortgageable, a.Mortgageable, "Mortgageable")
+	r.Equal(e.AssetFullName, a.AssetFullName, "AssetFullName")
+	r.Equal(e.AssetName, a.AssetName, "AssetName")
+	r.Equal(e.IsBorrowable, a.IsBorrowable, "IsBorrowable")
+	r.Equal(e.IsMortgageable, a.IsMortgageable, "IsMortgageable")
 	r.Equal(e.UserMinBorrow, a.UserMinBorrow, "UserMinBorrow")
 	r.Equal(e.UserMinRepay, a.UserMinRepay, "UserMinRepay")
 }

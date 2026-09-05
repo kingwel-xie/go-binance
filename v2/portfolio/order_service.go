@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/adshao/go-binance/v2/common"
 )
 
 // CreateOrderService create order
@@ -816,4 +818,118 @@ type MarginForceOrders struct {
 		UpdatedTime int64  `json:"updatedTime"`
 	} `json:"rows"`
 	Total int `json:"total"`
+}
+
+// CreateBatchOrdersService create batch orders
+type CreateBatchOrdersService struct {
+	c      *Client
+	orders []*CreateOrderService
+}
+
+// CreateBatchOrdersResponse contains the response from CreateBatchOrders operation
+type CreateBatchOrdersResponse struct {
+	// Total number of messages in the response
+	N int
+	// List of orders which were placed successfully which can have a length between 0 and N
+	Orders []*Order
+	// List of errors of length N, where each item corresponds to a nil value if
+	// the order from that specific index was placed successfully OR an non-nil *APIError if there was an error with
+	// the order at that index
+	Errors []error
+}
+
+func newCreateBatchOrdersResponse(n int) *CreateBatchOrdersResponse {
+	return &CreateBatchOrdersResponse{
+		N:      n,
+		Errors: make([]error, n),
+	}
+}
+
+// OrderList set order list
+func (s *CreateBatchOrdersService) OrderList(orders []*CreateOrderService) *CreateBatchOrdersService {
+	s.orders = orders
+	return s
+}
+
+// Do send request
+func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption) (res *CreateBatchOrdersResponse, err error) {
+	r := &request{
+		method:   http.MethodPost,
+		endpoint: "/papi/v1/batchOrders",
+		secType:  secTypeSigned,
+	}
+
+	orders := []params{}
+	for _, order := range s.orders {
+		m := params{
+			"symbol":           order.symbol,
+			"side":             order.side,
+			"type":             order.orderType,
+			"newOrderRespType": order.newOrderRespType,
+		}
+		if order.quantity != "" {
+			m["quantity"] = order.quantity
+		}
+		if order.positionSide != nil {
+			m["positionSide"] = *order.positionSide
+		}
+		if order.timeInForce != nil {
+			m["timeInForce"] = *order.timeInForce
+		}
+		if order.reduceOnly != nil {
+			m["reduceOnly"] = *order.reduceOnly
+		}
+		if order.price != nil {
+			m["price"] = *order.price
+		}
+		if order.newClientOrderID != nil {
+			m["newClientOrderId"] = *order.newClientOrderID
+		}
+		orders = append(orders, m)
+	}
+	b, err := json.Marshal(orders)
+	if err != nil {
+		return &CreateBatchOrdersResponse{}, err
+	}
+	m := params{
+		"batchOrders": string(b),
+	}
+
+	r.setFormParams(m)
+
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+
+	if err != nil {
+		return &CreateBatchOrdersResponse{}, err
+	}
+
+	rawMessages := make([]*json.RawMessage, 0)
+
+	err = json.Unmarshal(data, &rawMessages)
+	if err != nil {
+		return &CreateBatchOrdersResponse{}, err
+	}
+
+	batchCreateOrdersResponse := newCreateBatchOrdersResponse(len(rawMessages))
+	for i, j := range rawMessages {
+		// check if response is an API error
+		e := new(common.APIError)
+		if err := json.Unmarshal(*j, e); err != nil {
+			return nil, err
+		}
+
+		if e.IsValid() {
+			batchCreateOrdersResponse.Errors[i] = e
+			continue
+		}
+
+		o := new(Order)
+		if err := json.Unmarshal(*j, o); err != nil {
+			return nil, err
+		}
+
+		batchCreateOrdersResponse.Orders = append(batchCreateOrdersResponse.Orders, o)
+	}
+
+	return batchCreateOrdersResponse, nil
 }

@@ -30,6 +30,8 @@ type WsUserDataEvent struct {
 	BusinessLine          string                  `json:"fs"` // UM or CM
 	Time                  int64                   `json:"E"`
 	TransactionTime       int64                   `json:"T"`
+	CrossWalletBalance    string                  `json:"cw"`
+	MarginCallPositions   []WsPosition            `json:"p"`
 	AccountUpdate         WsAccountUpdate         `json:"a"`
 	OrderTradeUpdate      WsOrderTradeUpdate      `json:"o"`
 	AccountConfigUpdate   WsAccountConfigUpdate   `json:"ac"`
@@ -249,6 +251,8 @@ func WsUserDataServe(listenKey string, handler WsUserDataHandler, errHandler Err
 
 		switch event.Event {
 		case UserDataEventTypeAccountUpdate:
+			fallthrough
+		case UserDataEventTypeMarginCall:
 			fallthrough
 		case UserDataEventTypeOrderTradeUpdate:
 			fallthrough

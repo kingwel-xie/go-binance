@@ -43,7 +43,7 @@ func (s *incomeHistoryServiceTestSuite) TestIncomeHistory() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	orders, err := s.client.NewGetIncomeHistoryService().Symbol(symbol).
+	orders, err := s.client.NewGetIncomeHistoryService().Which("um").Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)

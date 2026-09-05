@@ -15,6 +15,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -320,15 +321,16 @@ func NewClient(apiKey, secretKey string) *Client {
 	}
 
 	client := &Client{
-		APIKey:     apiKey,
-		SecretKey:  secretKey,
-		BaseURL:    getAPIEndpoint(),
-		UserAgent:  "Binance/golang",
-		HTTPClient: http.DefaultClient,
-		Logger:     log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
-		WsURL:      getWsAPIEndpoint(),
-		WsConn:     c,
-		wsState:    wsState,
+		APIKey:        apiKey,
+		SecretKey:     secretKey,
+		BaseURL:       getAPIEndpoint(),
+		UserAgent:     "Binance/golang",
+		HTTPClient:    http.DefaultClient,
+		Logger:        log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
+		WsURL:         getWsAPIEndpoint(),
+		WsConn:        c,
+		WsAPIEnabled:  true,
+		wsState:       wsState,
 	}
 	if c != nil {
 		client.handleDisconnected(c.Done, nil, nil)
@@ -362,22 +364,35 @@ type doFunc func(req *http.Request) (*http.Response, error)
 // Client define API client
 type Client struct {
 	sync.Mutex
-	APIKey     string
-	SecretKey  string
-	BaseURL    string
-	UserAgent  string
-	HTTPClient *http.Client
-	Debug      bool
-	Logger     *log.Logger
-	TimeOffset int64
-	do         doFunc
-	WsURL      string
-	WsConn     *WsConnection
-	wsState    WsClientState // init/connecting/connected
+	APIKey       string
+	SecretKey    string
+	BaseURL      string
+	UserAgent    string
+	HTTPClient   *http.Client
+	Debug        bool
+	Logger       *log.Logger
+	TimeOffset   int64
+	do           doFunc
+	WsURL        string
+	WsConn       *WsConnection
+	WsAPIEnabled bool // enables transparent routing of supported requests to the WS API
+	wsState      WsClientState
+}
+
+// EnableWsAPI enables transparent routing of requests that support the WebSocket API
+func (c *Client) EnableWsAPI() *Client {
+	c.WsAPIEnabled = true
+	return c
+}
+
+// DisableWsAPI disables transparent routing to the WebSocket API, forcing HTTP requests
+func (c *Client) DisableWsAPI() *Client {
+	c.WsAPIEnabled = false
+	return c
 }
 
 func (c *Client) WsConnected() bool {
-	return c.wsState == WsConnected
+	return atomic.LoadInt32((*int32)(&c.wsState)) == int32(WsConnected)
 }
 
 func (c *Client) debug(format string, v ...interface{}) {
@@ -447,7 +462,7 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption) ([]byte, *RateLimits, error) {
 	var err error
 	// prefer to WS API
-	if c.WsConnected() && r.wsMethod != "" {
+	if c.WsAPIEnabled && c.WsConnected() && r.wsMethod != "" {
 		return c.callWsAPI(ctx, r, opts...)
 	}
 
@@ -490,8 +505,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		apiErr := new(common.APIError)
 		e := json.Unmarshal(data, apiErr)
 		if e != nil {
-			apiErr.Code = int64(res.StatusCode)
-			apiErr.Message = string(data)
+			apiErr.Response = data
 			c.debug("failed to unmarshal json: %s", e)
 		}
 		return nil, nil, apiErr
@@ -1091,6 +1105,11 @@ func (c *Client) NewSubAccountFuturesAccountService() *SubAccountFuturesAccountS
 // NewSubAccountFuturesSummaryV1Service Get Summary of Sub-account's Futures Account (For Master Account)
 func (c *Client) NewSubAccountFuturesSummaryV1Service() *SubAccountFuturesSummaryV1Service {
 	return &SubAccountFuturesSummaryV1Service{c: c}
+}
+
+// NewSubAccountFuturesTransferV1Service Futures Transfer for Sub-account (For Master Account)
+func (c *Client) NewSubAccountFuturesTransferV1Service() *SubAccountFuturesTransferV1Service {
+	return &SubAccountFuturesTransferV1Service{c: c}
 }
 
 // NewSimpleEarnAccountService init simple-earn account service

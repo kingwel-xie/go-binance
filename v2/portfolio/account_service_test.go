@@ -17,13 +17,19 @@ func TestAccountService(t *testing.T) {
 func (s *accountServiceTestSuite) TestGetBalance() {
 	data := []byte(`[
 		{
-			"accountAlias": "SgsR",
 			"asset": "USDT",
-			"balance": "122607.35137903",
-			"crossWalletBalance": "23.72469206",
-			"crossUnPnl": "0.00000000",
-			"availableBalance": "23.72469206",
-			"maxWithdrawAmount": "23.72469206"
+			"totalWalletBalance": "8.74947592",
+			"crossMarginAsset": "23.72469206",
+			"crossMarginBorrowed": "0.00000000",
+			"crossMarginFree": "10.00000000",
+			"crossMarginInterest": "0.00000000",
+			"crossMarginLocked": "5.00000000",
+			"umWalletBalance": "8.74947592",
+			"umUnrealizedPNL": "0.10000000",
+			"cmWalletBalance": "0.00000000",
+			"cmUnrealizedPNL": "0.00000000",
+			"updateTime": 1625474304765,
+			"negativeBalance": "0.00000000"
 		}
 	]`)
 	s.mockDo(data, nil)
@@ -37,81 +43,52 @@ func (s *accountServiceTestSuite) TestGetBalance() {
 	s.r().NoError(err)
 	s.r().Len(res, 1)
 	e := &Balance{
-		AccountAlias:       "SgsR",
-		Asset:              "USDT",
-		Balance:            "122607.35137903",
-		CrossWalletBalance: "23.72469206",
-		CrossUnPnl:         "0.00000000",
-		AvailableBalance:   "23.72469206",
-		MaxWithdrawAmount:  "23.72469206",
+		Asset:               "USDT",
+		TotalWalletBalance:  "8.74947592",
+		CrossMarginAsset:    "23.72469206",
+		CrossMarginBorrowed: "0.00000000",
+		CrossMarginFree:     "10.00000000",
+		CrossMarginInterest: "0.00000000",
+		CrossMarginLocked:   "5.00000000",
+		UmWalletBalance:     "8.74947592",
+		UmUnrealizedPNL:     "0.10000000",
+		CmWalletBalance:     "0.00000000",
+		CmUnrealizedPNL:     "0.00000000",
+		UpdateTime:          1625474304765,
+		NegativeBalance:     "0.00000000",
 	}
 	s.assertBalanceEqual(e, res[0])
 }
 
 func (s *accountServiceTestSuite) assertBalanceEqual(e, a *Balance) {
 	r := s.r()
-	r.Equal(e.AccountAlias, a.AccountAlias, "AccountAlias")
 	r.Equal(e.Asset, a.Asset, "Asset")
-	r.Equal(e.Balance, a.Balance, "Balance")
-	r.Equal(e.CrossWalletBalance, a.CrossWalletBalance, "CrossWalletBalance")
-	r.Equal(e.CrossUnPnl, a.CrossUnPnl, "CrossUnPnl")
-	r.Equal(e.AvailableBalance, a.AvailableBalance, "AvailableBalance")
-	r.Equal(e.MaxWithdrawAmount, a.MaxWithdrawAmount, "MaxWithdrawAmount")
+	r.Equal(e.TotalWalletBalance, a.TotalWalletBalance, "TotalWalletBalance")
+	r.Equal(e.CrossMarginAsset, a.CrossMarginAsset, "CrossMarginAsset")
+	r.Equal(e.CrossMarginBorrowed, a.CrossMarginBorrowed, "CrossMarginBorrowed")
+	r.Equal(e.CrossMarginFree, a.CrossMarginFree, "CrossMarginFree")
+	r.Equal(e.CrossMarginInterest, a.CrossMarginInterest, "CrossMarginInterest")
+	r.Equal(e.CrossMarginLocked, a.CrossMarginLocked, "CrossMarginLocked")
+	r.Equal(e.UmWalletBalance, a.UmWalletBalance, "UmWalletBalance")
+	r.Equal(e.UmUnrealizedPNL, a.UmUnrealizedPNL, "UmUnrealizedPNL")
+	r.Equal(e.CmWalletBalance, a.CmWalletBalance, "CmWalletBalance")
+	r.Equal(e.CmUnrealizedPNL, a.CmUnrealizedPNL, "CmUnrealizedPNL")
+	r.Equal(e.UpdateTime, a.UpdateTime, "UpdateTime")
+	r.Equal(e.NegativeBalance, a.NegativeBalance, "NegativeBalance")
 }
 
 func (s *accountServiceTestSuite) TestGetAccount() {
 	data := []byte(`{
-		"assets": [
-			{
-				"asset": "USDT",
-				"initialMargin": "0.33683000",
-				"maintMargin": "0.02695000",
-				"marginBalance": "8.74947592",
-				"maxWithdrawAmount": "8.41264592",
-				"openOrderInitialMargin": "0.00000000",
-				"positionInitialMargin": "0.33683000",
-				"unrealizedProfit": "-0.44537584",
-				"walletBalance": "9.19485176",
-				"crossWalletBalance": "23.72469206",
-				"crossUnPnl": "0.00000000",
-				"availableBalance": "126.72469206",
-				"marginAvailable": true,
-				"updateTime": 1625474304765
-			}
-		 ],
-		 "canDeposit": true,
-		 "canTrade": true,
-		 "canWithdraw": true,
-		 "feeTier": 2,
-		 "maxWithdrawAmount": "8.41264592",
-		 "multiAssetsMargin": false,
-		 "positions": [
-			 {
-				"isolated": false, 
-				"leverage": "20",
-				"initialMargin": "0.33683",
-				"maintMargin": "0.02695",
-				"openOrderInitialMargin": "0.00000",
-				"positionInitialMargin": "0.33683",
-				"symbol": "BTCUSDT",
-				"unrealizedProfit": "-0.44537584",
-				"entryPrice": "8950.5",
-				"maxNotional": "250000",
-				"positionSide": "BOTH",
-				"positionAmt": "0.436",
-				"bidNotional": "0",
-				"askNotional": "0",
-				"updateTime":1618646402359
-			 }
-		 ],
-		 "totalInitialMargin": "0.33683000",
-		 "totalMaintMargin": "0.02695000",
-		 "totalMarginBalance": "8.74947592",
-		 "totalOpenOrderInitialMargin": "0.00000000",
-		 "totalPositionInitialMargin": "0.33683000",
-		 "totalUnrealizedProfit": "-0.44537584",
-		 "totalWalletBalance": "9.19485176",
-		 "updateTime": 0
+		"uniMMR": "1.5",
+		"accountEquity": "122607.35137903",
+		"actualEquity": "122607.35137903",
+		"accountInitialMargin": "0.00000000",
+		"accountMaintMargin": "0.00000000",
+		"accountStatus": "NORMAL",
+		"virtualMaxWithdrawAmount": "100000.00000000",
+		"totalAvailableBalance": "100000.00000000",
+		"totalMarginOpenLoss": "0.00000000",
+		"updateTime": 1625474304765
 	}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
@@ -123,62 +100,30 @@ func (s *accountServiceTestSuite) TestGetAccount() {
 	res, err := s.client.NewGetAccountService().Do(newContext())
 	s.r().NoError(err)
 	e := &Account{
-		UpdateTime: 0,
+		UniMMR:                   "1.5",
+		AccountEquity:            "122607.35137903",
+		ActualEquity:             "122607.35137903",
+		AccountInitialMargin:     "0.00000000",
+		AccountMaintMargin:       "0.00000000",
+		AccountStatus:            "NORMAL",
+		VirtualMaxWithdrawAmount: "100000.00000000",
+		TotalAvailableBalance:    "100000.00000000",
+		TotalMarginOpenLoss:      "0.00000000",
+		UpdateTime:               1625474304765,
 	}
 	s.assertAccountEqual(e, res)
 }
 
 func (s *accountServiceTestSuite) assertAccountEqual(e, a *Account) {
 	r := s.r()
-	r.Equal(e.CanDeposit, a.CanDeposit, "CanDeposit")
-	r.Equal(e.CanTrade, a.CanTrade, "CanTrade")
-	r.Equal(e.CanWithdraw, a.CanWithdraw, "CanWithdraw")
-	r.Equal(e.FeeTier, a.FeeTier, "FeeTier")
-	r.Equal(e.MaxWithdrawAmount, a.MaxWithdrawAmount, "MaxWithdrawAmount")
-	r.Equal(e.TotalInitialMargin, a.TotalInitialMargin, "TotalInitialMargin")
-	r.Equal(e.TotalMaintMargin, a.TotalMaintMargin, "TotalMaintMargin")
-	r.Equal(e.TotalMarginBalance, a.TotalMarginBalance, "TotalMarginBalance")
-	r.Equal(e.TotalOpenOrderInitialMargin, a.TotalOpenOrderInitialMargin, "TotalOpenOrderInitialMargin")
-	r.Equal(e.TotalPositionInitialMargin, a.TotalPositionInitialMargin, "TotalPositionInitialMargin")
-	r.Equal(e.TotalUnrealizedProfit, a.TotalUnrealizedProfit, "TotalUnrealizedProfit")
-	r.Equal(e.TotalWalletBalance, a.TotalWalletBalance, "TotalWalletBalance")
+	r.Equal(e.UniMMR, a.UniMMR, "UniMMR")
+	r.Equal(e.AccountEquity, a.AccountEquity, "AccountEquity")
+	r.Equal(e.ActualEquity, a.ActualEquity, "ActualEquity")
+	r.Equal(e.AccountInitialMargin, a.AccountInitialMargin, "AccountInitialMargin")
+	r.Equal(e.AccountMaintMargin, a.AccountMaintMargin, "AccountMaintMargin")
+	r.Equal(e.AccountStatus, a.AccountStatus, "AccountStatus")
+	r.Equal(e.VirtualMaxWithdrawAmount, a.VirtualMaxWithdrawAmount, "VirtualMaxWithdrawAmount")
+	r.Equal(e.TotalAvailableBalance, a.TotalAvailableBalance, "TotalAvailableBalance")
+	r.Equal(e.TotalMarginOpenLoss, a.TotalMarginOpenLoss, "TotalMarginOpenLoss")
 	r.Equal(e.UpdateTime, a.UpdateTime, "UpdateTime")
-	r.Equal(e.MultiAssetsMargin, a.MultiAssetsMargin, "MultiAssetsMargin")
-
-	r.Len(a.Assets, len(e.Assets))
-	for i := 0; i < len(a.Assets); i++ {
-		r.Equal(e.Assets[i].Asset, a.Assets[i].Asset, "Asset")
-		r.Equal(e.Assets[i].InitialMargin, a.Assets[i].InitialMargin, "InitialMargin")
-		r.Equal(e.Assets[i].MaintMargin, a.Assets[i].MaintMargin, "MaintMargin")
-		r.Equal(e.Assets[i].MarginBalance, a.Assets[i].MarginBalance, "MarginBalance")
-		r.Equal(e.Assets[i].MaxWithdrawAmount, a.Assets[i].MaxWithdrawAmount, "MaxWithdrawAmount")
-		r.Equal(e.Assets[i].OpenOrderInitialMargin, a.Assets[i].OpenOrderInitialMargin, "OpenOrderInitialMargin")
-		r.Equal(e.Assets[i].PositionInitialMargin, a.Assets[i].PositionInitialMargin, "PositionInitialMargin")
-		r.Equal(e.Assets[i].UnrealizedProfit, a.Assets[i].UnrealizedProfit, "UnrealizedProfit")
-		r.Equal(e.Assets[i].WalletBalance, a.Assets[i].WalletBalance, "WalletBalance")
-		r.Equal(e.Assets[i].CrossWalletBalance, a.Assets[i].CrossWalletBalance, "CrossWalletBalance")
-		r.Equal(e.Assets[i].CrossUnPnl, a.Assets[i].CrossUnPnl, "CrossUnPnl")
-		r.Equal(e.Assets[i].AvailableBalance, a.Assets[i].AvailableBalance, "AvailableBalance")
-		r.Equal(e.Assets[i].MarginAvailable, a.Assets[i].MarginAvailable, "MarginAvailable")
-		r.Equal(e.Assets[i].UpdateTime, a.Assets[i].UpdateTime, "UpdateTime")
-	}
-
-	r.Len(a.Positions, len(e.Positions))
-	for i := 0; i < len(a.Positions); i++ {
-		r.Equal(e.Positions[i].Isolated, a.Positions[i].Isolated, "Isolated")
-		r.Equal(e.Positions[i].Leverage, a.Positions[i].Leverage, "Leverage")
-		r.Equal(e.Positions[i].InitialMargin, a.Positions[i].InitialMargin, "InitialMargin")
-		r.Equal(e.Positions[i].MaintMargin, a.Positions[i].MaintMargin, "MaintMargin")
-		r.Equal(e.Positions[i].OpenOrderInitialMargin, a.Positions[i].OpenOrderInitialMargin, "OpenOrderInitialMargin")
-		r.Equal(e.Positions[i].PositionInitialMargin, a.Positions[i].PositionInitialMargin, "PositionInitialMargin")
-		r.Equal(e.Positions[i].Symbol, a.Positions[i].Symbol, "Symbol")
-		r.Equal(e.Positions[i].UnrealizedProfit, a.Positions[i].UnrealizedProfit, "UnrealizedProfit")
-		r.Equal(e.Positions[i].EntryPrice, a.Positions[i].EntryPrice, "EntryPrice")
-		r.Equal(e.Positions[i].MaxNotional, a.Positions[i].MaxNotional, "MaxNotional")
-		r.Equal(e.Positions[i].PositionSide, a.Positions[i].PositionSide, "PositionSide")
-		r.Equal(e.Positions[i].PositionAmt, a.Positions[i].PositionAmt, "PositionAmt")
-		r.Equal(e.Positions[i].BidNotional, a.Positions[i].BidNotional, "BidNotional")
-		r.Equal(e.Positions[i].AskNotional, a.Positions[i].AskNotional, "AskNotional")
-		r.Equal(e.Positions[i].UpdateTime, a.Positions[i].UpdateTime, "UpdateTime")
-	}
 }

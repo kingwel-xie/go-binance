@@ -38,9 +38,7 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		"updateTime": 1566818724722,
 		"workingType": "CONTRACT_PRICE",
 		"activatePrice": "1000",
-		"priceRate": "0.1",
 		"positionSide": "BOTH",
-		"closePosition": false,
 		"priceProtect": true
 	}`)
 	s.mockDo(data, nil)
@@ -54,13 +52,8 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 	price := "10000"
 	newClientOrderID := "testOrder"
 	reduceOnly := false
-	stopPrice := "0"
-	activationPrice := "1000"
-	callbackRate := "0.1"
-	workingType := WorkingTypeContractPrice
 	priceProtect := true
 	newOrderResponseType := NewOrderRespTypeRESULT
-	closePosition := false
 	s.assertReq(func(r *request) {
 		e := newSignedRequest().setFormParams(params{
 			"symbol":           symbol,
@@ -72,30 +65,22 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 			"reduceOnly":       reduceOnly,
 			"price":            price,
 			"newClientOrderId": newClientOrderID,
-			"stopPrice":        stopPrice,
-			"workingType":      workingType,
-			"activationPrice":  activationPrice,
-			"callbackRate":     callbackRate,
-			"priceProtect":     priceProtect,
 			"newOrderRespType": newOrderResponseType,
-			"closePosition":    closePosition,
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
-		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).ClosePosition(closePosition).
+	res, err := s.client.NewCreateOrderService().Which("um").Symbol(symbol).Side(side).
+		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).
 		ReduceOnly(reduceOnly).Price(price).NewClientOrderID(newClientOrderID).
-		StopPrice(stopPrice).WorkingType(workingType).ActivationPrice(activationPrice).
-		CallbackRate(callbackRate).PositionSide(positionSide).
-		PriceProtect(priceProtect).NewOrderResponseType(newOrderResponseType).
+		PositionSide(positionSide).NewOrderResponseType(newOrderResponseType).
 		Do(newContext())
 	s.r().NoError(err)
 	e := &CreateOrderResponse{
-		ClientOrderID:    newClientOrderID,
+		ClientOrderId:    newClientOrderID,
 		CumQuote:         "0",
-		ExecutedQuantity: "0",
-		OrderID:          22542179,
-		OrigQuantity:     "10",
+		ExecutedQty: "0",
+		OrderId:          22542179,
+		OrigQty:          "10",
 		PositionSide:     positionSide,
 		Price:            "10000",
 		ReduceOnly:       false,
@@ -104,12 +89,10 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 		StopPrice:        "0",
 		Symbol:           symbol,
 		TimeInForce:      TimeInForceTypeGTC,
-		Type:             OrderTypeLimit,
+		OrderType:        OrderTypeLimit,
 		UpdateTime:       1566818724722,
 		WorkingType:      WorkingTypeContractPrice,
-		ActivatePrice:    activationPrice,
-		PriceRate:        callbackRate,
-		ClosePosition:    false,
+		ActivatePrice:    "1000",
 		PriceProtect:     priceProtect,
 	}
 	s.assertCreateOrderResponseEqual(e, res)
@@ -117,12 +100,12 @@ func (s *orderServiceTestSuite) TestCreateOrder() {
 
 func (s *baseOrderTestSuite) assertCreateOrderResponseEqual(e, a *CreateOrderResponse) {
 	r := s.r()
-	r.Equal(e.ClientOrderID, a.ClientOrderID, "ClientOrderID")
+	r.Equal(e.ClientOrderId, a.ClientOrderId, "ClientOrderID")
 	r.Equal(e.CumQuote, a.CumQuote, "CumQuote")
 	r.Equal(e.PriceProtect, a.PriceProtect, "PriceProtect")
-	r.Equal(e.ExecutedQuantity, a.ExecutedQuantity, "ExecutedQuantity")
-	r.Equal(e.OrderID, a.OrderID, "OrderID")
-	r.Equal(e.OrigQuantity, a.OrigQuantity, "OrigQuantity")
+	r.Equal(e.ExecutedQty, a.ExecutedQty, "ExecutedQty")
+	r.Equal(e.OrderId, a.OrderId, "OrderId")
+	r.Equal(e.OrigQty, a.OrigQty, "OrigQty")
 	r.Equal(e.PositionSide, a.PositionSide, "PositionSide")
 	r.Equal(e.Price, a.Price, "Price")
 	r.Equal(e.ReduceOnly, a.ReduceOnly, "ReduceOnly")
@@ -131,12 +114,10 @@ func (s *baseOrderTestSuite) assertCreateOrderResponseEqual(e, a *CreateOrderRes
 	r.Equal(e.StopPrice, a.StopPrice, "StopPrice")
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
 	r.Equal(e.TimeInForce, a.TimeInForce, "TimeInForce")
-	r.Equal(e.Type, a.Type, "Type")
+	r.Equal(e.OrderType, a.OrderType, "OrderType")
 	r.Equal(e.UpdateTime, a.UpdateTime, "UpdateTime")
 	r.Equal(e.WorkingType, a.WorkingType, "WorkingType")
 	r.Equal(e.ActivatePrice, a.ActivatePrice, "ActivatePrice")
-	r.Equal(e.PriceRate, a.PriceRate, "PriceRate")
-	r.Equal(e.ClosePosition, a.ClosePosition, "ClosePosition")
 }
 
 func (s *orderServiceTestSuite) TestListOpenOrders() {
@@ -176,7 +157,7 @@ func (s *orderServiceTestSuite) TestListOpenOrders() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	orders, err := s.client.NewListOpenOrdersService().Symbol(symbol).
+	orders, err := s.client.NewListOpenOrdersService().Which("um").Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
@@ -221,7 +202,7 @@ func (s *baseOrderTestSuite) assertOrderEqual(e, a *Order) {
 	r.Equal(e.Type, a.Type, "Type")
 	r.Equal(e.Side, a.Side, "Side")
 	r.Equal(e.StopPrice, a.StopPrice, "StopPrice")
-	r.Equal(e.Time, e.Time, "Time")
+	r.Equal(e.Time, a.Time, "Time")
 	r.Equal(e.UpdateTime, a.UpdateTime, "UpdateTime")
 	r.Equal(e.WorkingType, a.WorkingType, "WorkingType")
 	r.Equal(e.ActivatePrice, a.ActivatePrice, "ActivatePrice")
@@ -267,7 +248,7 @@ func (s *orderServiceTestSuite) TestGetOpenOrder() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	order, err := s.client.NewGetOpenOrderService().Symbol(symbol).OrderID(orderId).
+	order, err := s.client.NewGetOpenOrderService().Which("um").Symbol(symbol).OrderID(orderId).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)
@@ -333,7 +314,7 @@ func (s *orderServiceTestSuite) TestGetOrder() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	order, err := s.client.NewGetOrderService().Symbol(symbol).
+	order, err := s.client.NewGetOrderService().Which("um").Symbol(symbol).
 		OrderID(orderID).OrigClientOrderID(origClientOrderID).Do(newContext())
 	r := s.r()
 	r.NoError(err)
@@ -405,7 +386,7 @@ func (s *orderServiceTestSuite) TestListOrders() {
 		s.assertRequestEqual(e, r)
 	})
 
-	orders, err := s.client.NewListOrdersService().Symbol(symbol).
+	orders, err := s.client.NewListOrdersService().Which("um").Symbol(symbol).
 		OrderID(orderID).StartTime(startTime).EndTime(endTime).
 		Limit(limit).Do(newContext())
 	r := s.r()
@@ -473,7 +454,7 @@ func (s *orderServiceTestSuite) TestCancelOrder() {
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewCancelOrderService().Symbol(symbol).
+	res, err := s.client.NewCancelOrderService().Which("um").Symbol(symbol).
 		OrderID(orderID).OrigClientOrderID(origClientOrderID).
 		Do(newContext())
 	r := s.r()
@@ -543,7 +524,7 @@ func (s *orderServiceTestSuite) TestCancelAllOpenOrders() {
 		s.assertRequestEqual(e, r)
 	})
 
-	err := s.client.NewCancelAllOpenOrdersService().Symbol(symbol).
+	err := s.client.NewCancelAllOpenOrdersService().Which("um").Symbol(symbol).
 		Do(newContext())
 	s.r().NoError(err)
 }
@@ -551,11 +532,12 @@ func (s *orderServiceTestSuite) TestCancelAllOpenOrders() {
 func (s *orderServiceTestSuite) TestListLiquidationOrders() {
 	data := []byte(`[
 		{
+			  "orderId": 42,
 			  "symbol": "BTCUSDT",
 			  "price": "7918.33",
 			  "origQty": "0.014",
 			  "executedQty": "0.014",
-			  "avragePrice": "7918.33",
+			  "avgPrice": "7918.33",
 			  "status": "FILLED",
 			  "timeInForce": "IOC",
 			  "type": "LIMIT",
@@ -571,30 +553,31 @@ func (s *orderServiceTestSuite) TestListLiquidationOrders() {
 	endTime := int64(1568014460894)
 	limit := 1
 	s.assertReq(func(r *request) {
-		e := newRequest().setParams(params{
-			"symbol":    symbol,
-			"startTime": startTime,
-			"endTime":   endTime,
-			"limit":     limit,
+		e := newSignedRequest().setParams(params{
+			"autoCloseType": "",
+			"symbol":        symbol,
+			"startTime":     startTime,
+			"endTime":       endTime,
+			"limit":         limit,
 		})
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewListLiquidationOrdersService().Symbol(symbol).
+	res, err := s.client.NewListUserLiquidationOrdersService().Which("um").Symbol(symbol).
 		StartTime(startTime).EndTime(endTime).Limit(limit).Do(newContext())
 	r := s.r()
 	r.NoError(err)
-	e := []*LiquidationOrder{
+	e := []*UserLiquidationOrder{
 		{
-			Symbol:           symbol,
-			Price:            "7918.33",
-			OrigQuantity:     "0.014",
-			ExecutedQuantity: "0.014",
-			AveragePrice:     "7918.33",
-			Status:           OrderStatusTypeFilled,
-			TimeInForce:      TimeInForceTypeIOC,
-			Type:             OrderTypeLimit,
-			Side:             SideTypeSell,
+			Symbol:      symbol,
+			Price:       "7918.33",
+			OrigQty:     "0.014",
+			ExecutedQty: "0.014",
+			AvgPrice:    "7918.33",
+			Status:      "FILLED",
+			TimeInForce: "IOC",
+			Type:        "LIMIT",
+			Side:        "SELL",
 		},
 	}
 	s.r().Len(res, len(e))
@@ -603,13 +586,13 @@ func (s *orderServiceTestSuite) TestListLiquidationOrders() {
 	}
 }
 
-func (s *orderServiceTestSuite) assertLiquidationEqual(e, a *LiquidationOrder) {
+func (s *orderServiceTestSuite) assertLiquidationEqual(e, a *UserLiquidationOrder) {
 	r := s.r()
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
 	r.Equal(e.Price, a.Price, "Price")
-	r.Equal(e.OrigQuantity, a.OrigQuantity, "OrigQuantity")
-	r.Equal(e.ExecutedQuantity, a.ExecutedQuantity, "ExecutedQuantity")
-	r.Equal(e.AveragePrice, a.AveragePrice, "AveragePrice")
+	r.Equal(e.OrigQty, a.OrigQty, "OrigQty")
+	r.Equal(e.ExecutedQty, a.ExecutedQty, "ExecutedQty")
+	r.Equal(e.AvgPrice, a.AvgPrice, "AvgPrice")
 	r.Equal(e.Status, a.Status, "Status")
 	r.Equal(e.TimeInForce, a.TimeInForce, "TimeInForce")
 	r.Equal(e.Type, a.Type, "Type")

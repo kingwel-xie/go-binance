@@ -112,6 +112,13 @@ type T struct {
 
 // Account define account info
 type Account struct {
+	Assets                      []*AccountAsset    `json:"assets"`
+	FeeTier                     int                `json:"feeTier"`
+	CanTrade                    bool               `json:"canTrade"`
+	CanDeposit                  bool               `json:"canDeposit"`
+	CanWithdraw                 bool               `json:"canWithdraw"`
+	UpdateTime                  int64              `json:"updateTime"`
+	MultiAssetsMargin           bool               `json:"multiAssetsMargin"`
 	TotalInitialMargin          string             `json:"totalInitialMargin"`
 	TotalMaintMargin            string             `json:"totalMaintMargin"`
 	TotalWalletBalance          string             `json:"totalWalletBalance"`
@@ -123,7 +130,6 @@ type Account struct {
 	TotalCrossUnPnl             string             `json:"totalCrossUnPnl"`
 	AvailableBalance            string             `json:"availableBalance"`
 	MaxWithdrawAmount           string             `json:"maxWithdrawAmount"`
-	Assets                      []*AccountAsset    `json:"assets"`
 	Positions                   []*AccountPosition `json:"positions"`
 }
 
@@ -141,6 +147,7 @@ type AccountAsset struct {
 	CrossUnPnl             string `json:"crossUnPnl"`
 	AvailableBalance       string `json:"availableBalance"`
 	MaxWithdrawAmount      string `json:"maxWithdrawAmount"`
+	MarginAvailable        bool   `json:"marginAvailable"`
 	UpdateTime             int64  `json:"updateTime"`
 }
 

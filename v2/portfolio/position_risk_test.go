@@ -44,7 +44,7 @@ func (s *positionRiskServiceTestSuite) TestGetPositionRisk() {
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewGetPositionRiskService().Symbol(symbol).
+	res, err := s.client.NewGetPositionRiskService().Which("um").Symbol(symbol).
 		Do(newContext(), WithRecvWindow(recvWindow))
 	r := s.r()
 	r.NoError(err)

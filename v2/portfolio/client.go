@@ -90,8 +90,10 @@ const (
 	PositionSideTypeLong  PositionSideType = "LONG"
 	PositionSideTypeShort PositionSideType = "SHORT"
 
-	OrderTypeLimit  OrderType = "LIMIT"
-	OrderTypeMarket OrderType = "MARKET"
+	OrderTypeLimit       OrderType = "LIMIT"
+	OrderTypeMarket      OrderType = "MARKET"
+	OrderTypeTakeProfit  OrderType = "TAKE_PROFIT"
+	OrderTypeStopLoss    OrderType = "STOP_LOSS"
 
 	StrategyTypeStop               StrategyType = "STOP"
 	StrategyTypeStopMarket         StrategyType = "STOP_MARKET"
@@ -154,6 +156,7 @@ const (
 
 	UserDataEventTypeListenKeyExpired      UserDataEventType = "listenKeyExpired"
 	UserDataEventTypeAccountUpdate         UserDataEventType = "ACCOUNT_UPDATE"
+	UserDataEventTypeMarginCall            UserDataEventType = "MARGIN_CALL"
 	UserDataEventTypeOrderTradeUpdate      UserDataEventType = "ORDER_TRADE_UPDATE"
 	UserDataEventTypeAccountConfigUpdate   UserDataEventType = "ACCOUNT_CONFIG_UPDATE"
 	UserDataEventTypeCondOrderUpdate       UserDataEventType = "CONDITIONAL_ORDER_TRADE_UPDATE"
@@ -359,8 +362,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 		apiErr := new(common.APIError)
 		e := json.Unmarshal(data, apiErr)
 		if e != nil {
-			apiErr.Code = int64(res.StatusCode)
-			apiErr.Message = string(data)
+			apiErr.Response = data
 			c.debug("failed to unmarshal json: %s", e)
 		}
 		return nil, &http.Header{}, apiErr
@@ -379,15 +381,15 @@ func (c *Client) NewPingService() *PingService {
 	return &PingService{c: c}
 }
 
-//// NewServerTimeService init server time service
-//func (c *Client) NewServerTimeService() *ServerTimeService {
-//	return &ServerTimeService{c: c}
-//}
-//
-//// NewSetServerTimeService init set server time service
-//func (c *Client) NewSetServerTimeService() *SetServerTimeService {
-//	return &SetServerTimeService{c: c}
-//}
+// NewServerTimeService init server time service
+func (c *Client) NewServerTimeService() *ServerTimeService {
+	return &ServerTimeService{c: c}
+}
+
+// NewSetServerTimeService init set server time service
+func (c *Client) NewSetServerTimeService() *SetServerTimeService {
+	return &SetServerTimeService{c: c}
+}
 
 // NewAggTradesService init aggregate trades service
 func (c *Client) NewAggTradesService() *AggTradesService {
@@ -402,6 +404,11 @@ func (c *Client) NewRecentTradesService() *RecentTradesService {
 // NewCreateOrderService init creating order service
 func (c *Client) NewCreateOrderService() *CreateOrderService {
 	return &CreateOrderService{c: c}
+}
+
+// NewCreateBatchOrdersService init creating batch order service
+func (c *Client) NewCreateBatchOrdersService() *CreateBatchOrdersService {
+	return &CreateBatchOrdersService{c: c}
 }
 
 // NewGetOrderService init get order service
