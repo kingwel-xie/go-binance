@@ -1,0 +1,2713 @@
+openapi: 3.0.2
+info:
+  title: Options WebSocket Market Streams
+  description: 访问市场数据、管理账户，并交易 Binance 期权。
+  version: 1.0.0
+x-product-type: ws-streams
+x-user-data-streams: true
+tags:
+  - name: public
+    x-displayName: 公开
+    x-url-segment: /public
+  - name: market
+    x-displayName: 市场
+    x-url-segment: /market
+servers:
+  - url: wss://fstream.binance.com
+  - url: wss://fstream.binancefuture.com
+paths:
+  /!index@arr:
+    post:
+      summary: 指数价格
+      description: 指数价格
+      tags:
+        - market
+      operationId: indexPriceStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/market#index-price-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/MarketApi/indexPriceStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/market_api/index_price_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Market/index_price_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/market/IndexPriceStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//MarketAPI/IndexPriceStreams/IndexPriceStreams.go
+      x-update-speed: 1000ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - '!index@arr'
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - '!index@arr'
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 指数价格流
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    e:
+                      type: string
+                      example: indexPrice
+                      description: 事件类型
+                    E:
+                      type: integer
+                      example: 1763092572229
+                      format: int64
+                      description: 时间
+                    s:
+                      type: string
+                      example: ETHUSDT
+                      description: 标的交易对
+                    p:
+                      type: string
+                      example: '3224.51976744'
+                      description: 指数价格
+              example:
+                - e: indexPrice
+                  E: 1763092572229
+                  s: ETHUSDT
+                  p: '3224.51976744'
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: '!index@arr'
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        e:
+                          type: string
+                          example: indexPrice
+                          description: 事件类型
+                        E:
+                          type: integer
+                          example: 1763092572229
+                          format: int64
+                          description: 时间
+                        s:
+                          type: string
+                          example: ETHUSDT
+                          description: 标的交易对
+                        p:
+                          type: string
+                          example: '3224.51976744'
+                          description: 指数价格
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: '!index@arr'
+                data:
+                  - e: indexPrice
+                    E: 1763092572229
+                    s: ETHUSDT
+                    p: '3224.51976744'
+  /{symbol}@kline_{interval}:
+    post:
+      summary: K线
+      description: K线流每1000毫秒推送当前K线更新（如果存在）。
+      tags:
+        - market
+      operationId: klineCandlestickStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/market#kline-candlestick-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/MarketApi/klineCandlestickStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/market_api/kline_candlestick_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Market/kline_candlestick_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/market/KlineCandlestickStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//MarketAPI/KlineCandlestickStreams/KlineCandlestickStreams.go
+      x-update-speed: 1000ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+        - name: interval
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1m
+            enum:
+              - 1m
+              - 3m
+              - 5m
+              - 15m
+              - 30m
+              - 1h
+              - 2h
+              - 4h
+              - 6h
+              - 12h
+              - 1d
+              - 3d
+              - 1w
+          description: 间隔参数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@kline_1m
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@kline_1m
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: K 线流
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: kline
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1638747660000
+                    format: int64
+                    description: 事件时间
+                  s:
+                    type: string
+                    example: BTC-200630-9000-P
+                    description: 交易对
+                  k:
+                    type: object
+                    properties:
+                      t:
+                        type: integer
+                        example: 1638747660000
+                        format: int64
+                        description: 这根K线的起始时间
+                      T:
+                        type: integer
+                        example: 1638747719999
+                        format: int64
+                        description: 这根K线的结束时间
+                      s:
+                        type: string
+                        example: BTC-200630-9000-P
+                        description: 交易对
+                      i:
+                        type: string
+                        example: 1m
+                        description: K线间隔
+                      f:
+                        type: integer
+                        example: 0
+                        format: int64
+                        description: 这根K线期间第一笔成交ID
+                      L:
+                        type: integer
+                        example: 0
+                        format: int64
+                        description: 这根K线期间末一笔成交ID
+                      o:
+                        type: string
+                        example: '1000'
+                        description: 这根K线期间第一笔成交价
+                      c:
+                        type: string
+                        example: '1000'
+                        description: 这根K线期间末一笔成交价
+                      h:
+                        type: string
+                        example: '1000'
+                        description: 这根K线期间最高成交价
+                      l:
+                        type: string
+                        example: '1000'
+                        description: 这根K线期间最低成交价
+                      v:
+                        type: string
+                        example: '0'
+                        description: 这根K线期间成交量
+                      'n':
+                        type: integer
+                        example: 0
+                        format: int64
+                        description: 这根K线期间成交笔数
+                      x:
+                        type: boolean
+                        example: false
+                        description: 这根K线是否完结(是否已经开始下一根K线)
+                      q:
+                        type: string
+                        example: '0'
+                        description: 这根K线期间成交额
+                      V:
+                        type: string
+                        example: '0'
+                        description: 主动买入的成交额
+                      Q:
+                        type: string
+                        example: '0'
+                        description: 主动买入的成交量
+                    description: K 线数据
+              example:
+                e: kline
+                E: 1638747660000
+                s: BTC-200630-9000-P
+                k:
+                  t: 1638747660000
+                  T: 1638747719999
+                  s: BTC-200630-9000-P
+                  i: 1m
+                  f: 0
+                  L: 0
+                  o: '1000'
+                  c: '1000'
+                  h: '1000'
+                  l: '1000'
+                  v: '0'
+                  'n': 0
+                  x: false
+                  q: '0'
+                  V: '0'
+                  Q: '0'
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@kline_1m
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: kline
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1638747660000
+                        format: int64
+                        description: 事件时间
+                      s:
+                        type: string
+                        example: BTC-200630-9000-P
+                        description: 交易对
+                      k:
+                        type: object
+                        properties:
+                          t:
+                            type: integer
+                            example: 1638747660000
+                            format: int64
+                            description: 这根K线的起始时间
+                          T:
+                            type: integer
+                            example: 1638747719999
+                            format: int64
+                            description: 这根K线的结束时间
+                          s:
+                            type: string
+                            example: BTC-200630-9000-P
+                            description: 交易对
+                          i:
+                            type: string
+                            example: 1m
+                            description: K线间隔
+                          f:
+                            type: integer
+                            example: 0
+                            format: int64
+                            description: 这根K线期间第一笔成交ID
+                          L:
+                            type: integer
+                            example: 0
+                            format: int64
+                            description: 这根K线期间末一笔成交ID
+                          o:
+                            type: string
+                            example: '1000'
+                            description: 这根K线期间第一笔成交价
+                          c:
+                            type: string
+                            example: '1000'
+                            description: 这根K线期间末一笔成交价
+                          h:
+                            type: string
+                            example: '1000'
+                            description: 这根K线期间最高成交价
+                          l:
+                            type: string
+                            example: '1000'
+                            description: 这根K线期间最低成交价
+                          v:
+                            type: string
+                            example: '0'
+                            description: 这根K线期间成交量
+                          'n':
+                            type: integer
+                            example: 0
+                            format: int64
+                            description: 这根K线期间成交笔数
+                          x:
+                            type: boolean
+                            example: false
+                            description: 这根K线是否完结(是否已经开始下一根K线)
+                          q:
+                            type: string
+                            example: '0'
+                            description: 这根K线期间成交额
+                          V:
+                            type: string
+                            example: '0'
+                            description: 主动买入的成交额
+                          Q:
+                            type: string
+                            example: '0'
+                            description: 主动买入的成交量
+                        description: K 线数据
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@kline_1m
+                data:
+                  e: kline
+                  E: 1638747660000
+                  s: BTC-200630-9000-P
+                  k:
+                    t: 1638747660000
+                    T: 1638747719999
+                    s: BTC-200630-9000-P
+                    i: 1m
+                    f: 0
+                    L: 0
+                    o: '1000'
+                    c: '1000'
+                    h: '1000'
+                    l: '1000'
+                    v: '0'
+                    'n': 0
+                    x: false
+                    q: '0'
+                    V: '0'
+                    Q: '0'
+  /{underlying}@optionMarkPrice:
+    post:
+      summary: 标记价格
+      description: 特定标的资产的所有期权交易对的标记价格。例如：[btcusdt@optionMarkPrice](wss://fstream.binance.com/market/stream?streams=btcusdt@optionMarkPrice)
+      tags:
+        - market
+      operationId: optionMarkPrice
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/market#option-mark-price
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/MarketApi/optionMarkPrice.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/market_api/option_mark_price.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Market/option_mark_price.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/market/OptionMarkPriceExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//MarketAPI/OptionMarkPrice/OptionMarkPrice.go
+      x-update-speed: 1000ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: underlying
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 标的资产参数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@optionMarkPrice
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@optionMarkPrice
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 标记价格
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    s:
+                      type: string
+                      example: BTC-251120-126000-C
+                      description: 交易对
+                    mp:
+                      type: string
+                      example: '770.543'
+                      description: 标记价格
+                    E:
+                      type: integer
+                      example: 1762867543321
+                      format: int64
+                      description: 事件时间
+                    e:
+                      type: string
+                      example: markPrice
+                      description: 事件类型
+                    i:
+                      type: string
+                      example: '104334.60217391'
+                      description: 指数价格
+                    P:
+                      type: string
+                      example: '0.000'
+                      description: 预估结算价，结算前半小时有效
+                    bo:
+                      type: string
+                      example: '0.000'
+                      description: 买一价格
+                    ao:
+                      type: string
+                      example: '900.000'
+                      description: 卖一价格
+                    bq:
+                      type: string
+                      example: '0.0000'
+                      description: 买一数量
+                    aq:
+                      type: string
+                      example: '0.2000'
+                      description: 卖一数量
+                    b:
+                      type: string
+                      example: '-1.0'
+                      description: 买一隐含波动率
+                    a:
+                      type: string
+                      example: '0.98161161'
+                      description: 卖一隐含波动率
+                    hl:
+                      type: string
+                      example: '924.652'
+                      description: 最高买价
+                    ll:
+                      type: string
+                      example: '616.435'
+                      description: 最低卖价
+                    vo:
+                      type: string
+                      example: '0.9408058'
+                      description: 隐含波动率
+                    rf:
+                      type: string
+                      example: '0.0'
+                      description: 无风险利率
+                    d:
+                      type: string
+                      example: '0.11111964'
+                      description: 德尔塔
+                    t:
+                      type: string
+                      example: '-164.26702615'
+                      description: 西塔
+                    g:
+                      type: string
+                      example: '0.00001245'
+                      description: 伽马
+                    v:
+                      type: string
+                      example: '30.63855919'
+                      description: 维加
+              example:
+                - s: BTC-251120-126000-C
+                  mp: '770.543'
+                  E: 1762867543321
+                  e: markPrice
+                  i: '104334.60217391'
+                  P: '0.000'
+                  bo: '0.000'
+                  ao: '900.000'
+                  bq: '0.0000'
+                  aq: '0.2000'
+                  b: '-1.0'
+                  a: '0.98161161'
+                  hl: '924.652'
+                  ll: '616.435'
+                  vo: '0.9408058'
+                  rf: '0.0'
+                  d: '0.11111964'
+                  t: '-164.26702615'
+                  g: '0.00001245'
+                  v: '30.63855919'
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@optionMarkPrice
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        s:
+                          type: string
+                          example: BTC-251120-126000-C
+                          description: 交易对
+                        mp:
+                          type: string
+                          example: '770.543'
+                          description: 标记价格
+                        E:
+                          type: integer
+                          example: 1762867543321
+                          format: int64
+                          description: 事件时间
+                        e:
+                          type: string
+                          example: markPrice
+                          description: 事件类型
+                        i:
+                          type: string
+                          example: '104334.60217391'
+                          description: 指数价格
+                        P:
+                          type: string
+                          example: '0.000'
+                          description: 预估结算价，结算前半小时有效
+                        bo:
+                          type: string
+                          example: '0.000'
+                          description: 买一价格
+                        ao:
+                          type: string
+                          example: '900.000'
+                          description: 卖一价格
+                        bq:
+                          type: string
+                          example: '0.0000'
+                          description: 买一数量
+                        aq:
+                          type: string
+                          example: '0.2000'
+                          description: 卖一数量
+                        b:
+                          type: string
+                          example: '-1.0'
+                          description: 买一隐含波动率
+                        a:
+                          type: string
+                          example: '0.98161161'
+                          description: 卖一隐含波动率
+                        hl:
+                          type: string
+                          example: '924.652'
+                          description: 最高买价
+                        ll:
+                          type: string
+                          example: '616.435'
+                          description: 最低卖价
+                        vo:
+                          type: string
+                          example: '0.9408058'
+                          description: 隐含波动率
+                        rf:
+                          type: string
+                          example: '0.0'
+                          description: 无风险利率
+                        d:
+                          type: string
+                          example: '0.11111964'
+                          description: 德尔塔
+                        t:
+                          type: string
+                          example: '-164.26702615'
+                          description: 西塔
+                        g:
+                          type: string
+                          example: '0.00001245'
+                          description: 伽马
+                        v:
+                          type: string
+                          example: '30.63855919'
+                          description: 维加
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@optionMarkPrice
+                data:
+                  - s: BTC-251120-126000-C
+                    mp: '770.543'
+                    E: 1762867543321
+                    e: markPrice
+                    i: '104334.60217391'
+                    P: '0.000'
+                    bo: '0.000'
+                    ao: '900.000'
+                    bq: '0.0000'
+                    aq: '0.2000'
+                    b: '-1.0'
+                    a: '0.98161161'
+                    hl: '924.652'
+                    ll: '616.435'
+                    vo: '0.9408058'
+                    rf: '0.0'
+                    d: '0.11111964'
+                    t: '-164.26702615'
+                    g: '0.00001245'
+                    v: '30.63855919'
+  /!optionSymbol:
+    post:
+      summary: 新增交易对信息推送
+      description: 新增交易对信息推送
+      tags:
+        - market
+      operationId: newSymbolInfo
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/market#new-symbol-info
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/MarketApi/newSymbolInfo.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/market_api/new_symbol_info.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Market/new_symbol_info.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/market/NewSymbolInfoExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//MarketAPI/NewSymbolInfo/NewSymbolInfo.go
+      x-update-speed: 50ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - '!optionSymbol'
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - '!optionSymbol'
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 新增交易对信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: optionSymbol
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1669356423908
+                    format: int64
+                    description: 事件时间
+                  s:
+                    type: string
+                    example: BTC-250926-140000-C
+                    description: 交易对
+                  ps:
+                    type: string
+                    example: BTCUSDT
+                    description: 标的资产
+                  qa:
+                    type: string
+                    example: USDT
+                    description: 计价资产
+                  d:
+                    type: string
+                    example: CALL
+                    description: 期权类型
+                  sp:
+                    type: string
+                    example: '21000'
+                    description: 行权价格
+                  dt:
+                    type: integer
+                    example: 4133404800000
+                    format: int64
+                    description: 行权时间
+                  u:
+                    type: integer
+                    example: 1
+                    format: int64
+                    description: 一张合约代表的标的数量
+                  ot:
+                    type: integer
+                    example: 1569398400000
+                    format: int64
+                    description: 上币时间
+                  cs:
+                    type: string
+                    example: TRADING
+                    description: 合约状态
+              example:
+                e: optionSymbol
+                E: 1669356423908
+                s: BTC-250926-140000-C
+                ps: BTCUSDT
+                qa: USDT
+                d: CALL
+                sp: '21000'
+                dt: 4133404800000
+                u: 1
+                ot: 1569398400000
+                cs: TRADING
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: '!optionSymbol'
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: optionSymbol
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1669356423908
+                        format: int64
+                        description: 事件时间
+                      s:
+                        type: string
+                        example: BTC-250926-140000-C
+                        description: 交易对
+                      ps:
+                        type: string
+                        example: BTCUSDT
+                        description: 标的资产
+                      qa:
+                        type: string
+                        example: USDT
+                        description: 计价资产
+                      d:
+                        type: string
+                        example: CALL
+                        description: 期权类型
+                      sp:
+                        type: string
+                        example: '21000'
+                        description: 行权价格
+                      dt:
+                        type: integer
+                        example: 4133404800000
+                        format: int64
+                        description: 行权时间
+                      u:
+                        type: integer
+                        example: 1
+                        format: int64
+                        description: 一张合约代表的标的数量
+                      ot:
+                        type: integer
+                        example: 1569398400000
+                        format: int64
+                        description: 上币时间
+                      cs:
+                        type: string
+                        example: TRADING
+                        description: 合约状态
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: '!optionSymbol'
+                data:
+                  e: optionSymbol
+                  E: 1669356423908
+                  s: BTC-250926-140000-C
+                  ps: BTCUSDT
+                  qa: USDT
+                  d: CALL
+                  sp: '21000'
+                  dt: 4133404800000
+                  u: 1
+                  ot: 1569398400000
+                  cs: TRADING
+  /{underlying}@openInterest@{expirationDate}:
+    post:
+      summary: 合约持仓量
+      description: 特定标的资产特定到期日的期权合约持仓量。如[ethusdt@openInterest@221125](wss://fstream.binance.com/market/stream?streams=ethusdt@openInterest@221125)
+      tags:
+        - market
+      operationId: openInterest
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/market#open-interest
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/MarketApi/openInterest.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/market_api/open_interest.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Market/open_interest.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/market/OpenInterestExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//MarketAPI/OpenInterest/OpenInterest.go
+      x-update-speed: 60s
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: underlying
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 标的资产参数
+        - name: expirationDate
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '220930'
+          description: 到期日参数。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@openInterest@220930
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@openInterest@220930
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 合约持仓量
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    e:
+                      type: string
+                      example: openInterest
+                      description: 事件类型
+                    E:
+                      type: integer
+                      format: int64
+                      example: 1668759300045
+                      description: 事件时间
+                    s:
+                      type: string
+                      example: ETH-221125-2700-C
+                      description: 交易对
+                    o:
+                      type: string
+                      example: '1580.87'
+                      description: 持仓量（以张数计）
+                    h:
+                      type: string
+                      example: '1912992.178168204'
+                      description: 持仓量（以USDT计）
+              example:
+                - e: openInterest
+                  E: 1668759300045
+                  s: ETH-221125-2700-C
+                  o: '1580.87'
+                  h: '1912992.178168204'
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@openInterest@220930
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        e:
+                          type: string
+                          example: openInterest
+                          description: 事件类型
+                        E:
+                          type: integer
+                          format: int64
+                          example: 1668759300045
+                          description: 事件时间
+                        s:
+                          type: string
+                          example: ETH-221125-2700-C
+                          description: 交易对
+                        o:
+                          type: string
+                          example: '1580.87'
+                          description: 持仓量（以张数计）
+                        h:
+                          type: string
+                          example: '1912992.178168204'
+                          description: 持仓量（以USDT计）
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@openInterest@220930
+                data:
+                  - e: openInterest
+                    E: 1668759300045
+                    s: ETH-221125-2700-C
+                    o: '1580.87'
+                    h: '1912992.178168204'
+  /{symbol}@depth@{updateSpeed}:
+    post:
+      summary: 增量深度信息
+      description: 买卖盘，每 500 毫秒推送一次，100 毫秒（如果存在）
+      tags:
+        - public
+      operationId: diffBookDepthStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/public#diff-book-depth-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/PublicApi/diffBookDepthStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/public_api/diff_book_depth_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Public/diff_book_depth_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/public/DiffBookDepthStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//PublicAPI/DiffBookDepthStreams/DiffBookDepthStreams.go
+      x-update-speed: 100ms or 500ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+        - name: updateSpeed
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 100ms
+            enum:
+              - 100ms
+              - 500ms
+          description: WebSocket 流更新速度。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@depth@100ms
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@depth@100ms
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 增量深度流
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: depthUpdate
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1762866729459
+                    format: int64
+                    description: 事件时间
+                  T:
+                    type: integer
+                    example: 1762866729358
+                    format: int64
+                    description: 撮合时间
+                  s:
+                    type: string
+                    example: BTC-251123-126000-C
+                    description: 交易对
+                  U:
+                    type: integer
+                    example: 465
+                    format: int64
+                    description: 从上次推送至今新增的第一个 update Id
+                  u:
+                    type: integer
+                    example: 465
+                    format: int64
+                    description: 从上次推送至今新增的最后一个 update Id
+                  pu:
+                    type: integer
+                    example: 464
+                    format: int64
+                    description: 上次推送的最后一个update Id(即上条消息的‘u’)
+                  b:
+                    type: array
+                    items:
+                      type: array
+                      minItems: 2
+                      maxItems: 2
+                      x-prefixItems:
+                        - type: string
+                          description: Price level to be updated
+                          example: '1100.000'
+                        - type: string
+                          description: Quantity
+                          example: '0.6000'
+                      items:
+                        oneOf:
+                          - type: string
+                            description: Price level to be updated
+                            example: '1100.000'
+                          - type: string
+                            description: Quantity
+                            example: '0.6000'
+                    description: 买方
+                  a:
+                    type: array
+                    items:
+                      type: array
+                      minItems: 2
+                      maxItems: 2
+                      x-prefixItems:
+                        - type: string
+                          description: Price level to be updated
+                          example: '1300.000'
+                        - type: string
+                          description: Quantity
+                          example: '0.6000'
+                      items:
+                        oneOf:
+                          - type: string
+                            description: Price level to be updated
+                            example: '1300.000'
+                          - type: string
+                            description: Quantity
+                            example: '0.6000'
+                    description: 卖方
+              example:
+                e: depthUpdate
+                E: 1762866729459
+                T: 1762866729358
+                s: BTC-251123-126000-C
+                U: 465
+                u: 465
+                pu: 464
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@depth@100ms
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: depthUpdate
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1762866729459
+                        format: int64
+                        description: 事件时间
+                      T:
+                        type: integer
+                        example: 1762866729358
+                        format: int64
+                        description: 撮合时间
+                      s:
+                        type: string
+                        example: BTC-251123-126000-C
+                        description: 交易对
+                      U:
+                        type: integer
+                        example: 465
+                        format: int64
+                        description: 从上次推送至今新增的第一个 update Id
+                      u:
+                        type: integer
+                        example: 465
+                        format: int64
+                        description: 从上次推送至今新增的最后一个 update Id
+                      pu:
+                        type: integer
+                        example: 464
+                        format: int64
+                        description: 上次推送的最后一个update Id(即上条消息的‘u’)
+                      b:
+                        type: array
+                        items:
+                          type: array
+                          minItems: 2
+                          maxItems: 2
+                          x-prefixItems:
+                            - type: string
+                              description: Price level to be updated
+                              example: '1100.000'
+                            - type: string
+                              description: Quantity
+                              example: '0.6000'
+                          items:
+                            oneOf:
+                              - type: string
+                                description: Price level to be updated
+                                example: '1100.000'
+                              - type: string
+                                description: Quantity
+                                example: '0.6000'
+                        description: 买方
+                      a:
+                        type: array
+                        items:
+                          type: array
+                          minItems: 2
+                          maxItems: 2
+                          x-prefixItems:
+                            - type: string
+                              description: Price level to be updated
+                              example: '1300.000'
+                            - type: string
+                              description: Quantity
+                              example: '0.6000'
+                          items:
+                            oneOf:
+                              - type: string
+                                description: Price level to be updated
+                                example: '1300.000'
+                              - type: string
+                                description: Quantity
+                                example: '0.6000'
+                        description: 卖方
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@depth@100ms
+                data:
+                  e: depthUpdate
+                  E: 1762866729459
+                  T: 1762866729358
+                  s: BTC-251123-126000-C
+                  U: 465
+                  u: 465
+                  pu: 464
+  /{symbol}@bookTicker:
+    post:
+      summary: 按Symbol的最优挂单信息
+      description: 实时推送指定交易对的最优挂单价格或数量的任何更新。
+      tags:
+        - public
+      operationId: individualSymbolBookTickerStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/public#individual-symbol-book-ticker-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/PublicApi/individualSymbolBookTickerStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/public_api/individual_symbol_book_ticker_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Public/individual_symbol_book_ticker_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/public/IndividualSymbolBookTickerStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//PublicAPI/IndividualSymbolBookTickerStreams/IndividualSymbolBookTickerStreams.go
+      x-update-speed: Real-Time
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@bookTicker
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@bookTicker
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 单个交易对最优挂单流
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: bookTicker
+                    description: 事件类型
+                  u:
+                    type: integer
+                    example: 2472
+                    format: int64
+                    description: 更新ID
+                  s:
+                    type: string
+                    example: BTC-251226-110000-C
+                    description: 交易对
+                  b:
+                    type: string
+                    example: '5000.000'
+                    description: 买单最优挂单价格
+                  B:
+                    type: string
+                    example: '0.2000'
+                    description: 买单最优挂单数量
+                  a:
+                    type: string
+                    example: '5100.000'
+                    description: 卖单最优挂单价格
+                  A:
+                    type: string
+                    example: '0.1000'
+                    description: 卖单最优挂单数量
+                  T:
+                    type: integer
+                    example: 1763041762942
+                    format: int64
+                    description: 撮合时间
+                  E:
+                    type: integer
+                    example: 1763041762942
+                    format: int64
+                    description: 事件推送时间
+              example:
+                e: bookTicker
+                u: 2472
+                s: BTC-251226-110000-C
+                b: '5000.000'
+                B: '0.2000'
+                a: '5100.000'
+                A: '0.1000'
+                T: 1763041762942
+                E: 1763041762942
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@bookTicker
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: bookTicker
+                        description: 事件类型
+                      u:
+                        type: integer
+                        example: 2472
+                        format: int64
+                        description: 更新ID
+                      s:
+                        type: string
+                        example: BTC-251226-110000-C
+                        description: 交易对
+                      b:
+                        type: string
+                        example: '5000.000'
+                        description: 买单最优挂单价格
+                      B:
+                        type: string
+                        example: '0.2000'
+                        description: 买单最优挂单数量
+                      a:
+                        type: string
+                        example: '5100.000'
+                        description: 卖单最优挂单价格
+                      A:
+                        type: string
+                        example: '0.1000'
+                        description: 卖单最优挂单数量
+                      T:
+                        type: integer
+                        example: 1763041762942
+                        format: int64
+                        description: 撮合时间
+                      E:
+                        type: integer
+                        example: 1763041762942
+                        format: int64
+                        description: 事件推送时间
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@bookTicker
+                data:
+                  e: bookTicker
+                  u: 2472
+                  s: BTC-251226-110000-C
+                  b: '5000.000'
+                  B: '0.2000'
+                  a: '5100.000'
+                  A: '0.1000'
+                  T: 1763041762942
+                  E: 1763041762942
+  /{symbol}@depth{level}@{updateSpeed}:
+    post:
+      summary: 有限档深度信息
+      description: 前 <levels> 档买卖盘。有效档位为 5、10、20。
+      tags:
+        - public
+      operationId: partialBookDepthStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/public#partial-book-depth-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/PublicApi/partialBookDepthStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/public_api/partial_book_depth_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Public/partial_book_depth_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/public/PartialBookDepthStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//PublicAPI/PartialBookDepthStreams/PartialBookDepthStreams.go
+      x-update-speed: 100ms or 500ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+        - name: level
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 5
+            enum:
+              - 5
+              - 10
+              - 20
+          description: level 参数
+        - name: updateSpeed
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 100ms
+            enum:
+              - 100ms
+              - 500ms
+          description: WebSocket 流更新速度。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@depth5@100ms
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@depth5@100ms
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 有限档深度流
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: depthUpdate
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1762866729459
+                    format: int64
+                    description: 事件时间
+                  T:
+                    type: integer
+                    example: 1762866729358
+                    format: int64
+                    description: 撮合时间
+                  s:
+                    type: string
+                    example: BTC-251123-126000-C
+                    description: 交易对
+                  U:
+                    type: integer
+                    example: 465
+                    format: int64
+                    description: 从上次推送至今新增的第一个 update Id
+                  u:
+                    type: integer
+                    example: 465
+                    format: int64
+                    description: 从上次推送至今新增的最后一个 update Id
+                  pu:
+                    type: integer
+                    example: 464
+                    format: int64
+                    description: 上次推送的最后一个update Id(即上条消息的‘u’)
+                  b:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: string
+                        example: '1100.000'
+                    description: 买方
+                  a:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: string
+                        example: '1300.000'
+                    description: 卖方
+              example:
+                e: depthUpdate
+                E: 1762866729459
+                T: 1762866729358
+                s: BTC-251123-126000-C
+                U: 465
+                u: 465
+                pu: 464
+                b:
+                  - - '1100.000'
+                a:
+                  - - '1300.000'
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@depth5@100ms
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: depthUpdate
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1762866729459
+                        format: int64
+                        description: 事件时间
+                      T:
+                        type: integer
+                        example: 1762866729358
+                        format: int64
+                        description: 撮合时间
+                      s:
+                        type: string
+                        example: BTC-251123-126000-C
+                        description: 交易对
+                      U:
+                        type: integer
+                        example: 465
+                        format: int64
+                        description: 从上次推送至今新增的第一个 update Id
+                      u:
+                        type: integer
+                        example: 465
+                        format: int64
+                        description: 从上次推送至今新增的最后一个 update Id
+                      pu:
+                        type: integer
+                        example: 464
+                        format: int64
+                        description: 上次推送的最后一个update Id(即上条消息的‘u’)
+                      b:
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            type: string
+                            example: '1100.000'
+                        description: 买方
+                      a:
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            type: string
+                            example: '1300.000'
+                        description: 卖方
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@depth5@100ms
+                data:
+                  e: depthUpdate
+                  E: 1762866729459
+                  T: 1762866729358
+                  s: BTC-251123-126000-C
+                  U: 465
+                  u: 465
+                  pu: 464
+                  b:
+                    - - '1100.000'
+                  a:
+                    - - '1300.000'
+  /{symbol}@optionTicker{expirationDate}:
+    post:
+      summary: 按交易对的Ticker
+      description: 所有交易对的24小时Ticker信息。只有Ticker信息发生变化的交易对才会被发送。
+      tags:
+        - public
+      operationId: hour24Ticker
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/public#hour24-ticker
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/PublicApi/hour24Ticker.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/public_api/hour24_ticker.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Public/hour24_ticker.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/public/Hour24TickerExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//PublicAPI/Hour24Ticker/Hour24Ticker.go
+      x-update-speed: 1000ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+        - name: expirationDate
+          in: path
+          required: false
+          schema:
+            type: string
+            example: '251230'
+          description: 到期日参数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@optionTicker251230
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@optionTicker251230
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 24小时Ticker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: 24hrTicker
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1764080707933
+                    format: int64
+                    description: 事件时间
+                  s:
+                    type: string
+                    example: ETH-251226-3000-C
+                    description: 交易对
+                  p:
+                    type: string
+                    example: '0.0000'
+                    description: 价格变化
+                  P:
+                    type: string
+                    example: '0.00'
+                    description: 价格变化百分比
+                  w:
+                    type: string
+                    example: '200.0000'
+                    description: 平均价格
+                  c:
+                    type: string
+                    example: '200.0000'
+                    description: 最新价
+                  Q:
+                    type: string
+                    example: '1.0000'
+                    description: 最新成交价格上的成交量
+                  o:
+                    type: string
+                    example: '200.0000'
+                    description: 开盘价
+                  h:
+                    type: string
+                    example: '200.0000'
+                    description: 最高价
+                  l:
+                    type: string
+                    example: '200.0000'
+                    description: 最低价
+                  v:
+                    type: string
+                    example: '9.0000'
+                    description: 成交量张数
+                  q:
+                    type: string
+                    example: '1800.0000'
+                    description: 成交金额
+                  O:
+                    type: integer
+                    example: 1764051060000
+                    format: int64
+                    description: 统计开始时间
+                  C:
+                    type: integer
+                    example: 1764080707933
+                    format: int64
+                    description: 统计结束时间
+                  F:
+                    type: integer
+                    example: 1
+                    format: int64
+                    description: 24小时内第一笔成交交易ID
+                  L:
+                    type: integer
+                    example: 22
+                    format: int64
+                    description: 24小时内最后一笔成交交易ID
+                  'n':
+                    type: integer
+                    example: 9
+                    format: int64
+                    description: 24小时内成交数
+              example:
+                e: 24hrTicker
+                E: 1764080707933
+                s: ETH-251226-3000-C
+                p: '0.0000'
+                P: '0.00'
+                w: '200.0000'
+                c: '200.0000'
+                Q: '1.0000'
+                o: '200.0000'
+                h: '200.0000'
+                l: '200.0000'
+                v: '9.0000'
+                q: '1800.0000'
+                O: 1764051060000
+                C: 1764080707933
+                F: 1
+                L: 22
+                'n': 9
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@optionTicker251230
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: 24hrTicker
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1764080707933
+                        format: int64
+                        description: 事件时间
+                      s:
+                        type: string
+                        example: ETH-251226-3000-C
+                        description: 交易对
+                      p:
+                        type: string
+                        example: '0.0000'
+                        description: 价格变化
+                      P:
+                        type: string
+                        example: '0.00'
+                        description: 价格变化百分比
+                      w:
+                        type: string
+                        example: '200.0000'
+                        description: 平均价格
+                      c:
+                        type: string
+                        example: '200.0000'
+                        description: 最新价
+                      Q:
+                        type: string
+                        example: '1.0000'
+                        description: 最新成交价格上的成交量
+                      o:
+                        type: string
+                        example: '200.0000'
+                        description: 开盘价
+                      h:
+                        type: string
+                        example: '200.0000'
+                        description: 最高价
+                      l:
+                        type: string
+                        example: '200.0000'
+                        description: 最低价
+                      v:
+                        type: string
+                        example: '9.0000'
+                        description: 成交量张数
+                      q:
+                        type: string
+                        example: '1800.0000'
+                        description: 成交金额
+                      O:
+                        type: integer
+                        example: 1764051060000
+                        format: int64
+                        description: 统计开始时间
+                      C:
+                        type: integer
+                        example: 1764080707933
+                        format: int64
+                        description: 统计结束时间
+                      F:
+                        type: integer
+                        example: 1
+                        format: int64
+                        description: 24小时内第一笔成交交易ID
+                      L:
+                        type: integer
+                        example: 22
+                        format: int64
+                        description: 24小时内最后一笔成交交易ID
+                      'n':
+                        type: integer
+                        example: 9
+                        format: int64
+                        description: 24小时内成交数
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@optionTicker251230
+                data:
+                  e: 24hrTicker
+                  E: 1764080707933
+                  s: ETH-251226-3000-C
+                  p: '0.0000'
+                  P: '0.00'
+                  w: '200.0000'
+                  c: '200.0000'
+                  Q: '1.0000'
+                  o: '200.0000'
+                  h: '200.0000'
+                  l: '200.0000'
+                  v: '9.0000'
+                  q: '1800.0000'
+                  O: 1764051060000
+                  C: 1764080707933
+                  F: 1
+                  L: 22
+                  'n': 9
+  /{symbol}@optionTrade:
+    post:
+      summary: 最新交易
+      description: 交易流推送特定交易对或标的资产的原始交易信息。例如[btcusdt@optionTrade](wss://fstream.binance.com/public/stream?streams=btcusdt@optionTrade)
+      tags:
+        - public
+      operationId: tradeStreams
+      externalDocs:
+        url: https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-options/api/ws-streams/public#trade-streams
+      x-connectors-examples:
+        ts: https://raw.githubusercontent.com/binance/binance-connector-js/master/clients/derivatives-trading-options/examples/websocket-streams/PublicApi/tradeStreams.ts
+        rust: https://raw.githubusercontent.com/binance/binance-connector-rust/main/examples/derivatives_trading_options/websocket_streams/public_api/trade_streams.rs
+        python: https://raw.githubusercontent.com/binance/binance-connector-python/master/clients/derivatives_trading_options/examples/websocket_streams/Public/trade_streams.py
+        java: https://raw.githubusercontent.com/binance/binance-connector-java/master/examples/derivatives-trading-options/src/main/java/com/binance/connector/client/derivatives_trading_options/websocket/stream/websocketmarketstreams/public/TradeStreamsExample.java
+        go: https://raw.githubusercontent.com/binance/binance-connector-go/main/clients/derivativestradingoptions/examples/websocketstreams//PublicAPI/TradeStreams/TradeStreams.go
+      x-update-speed: 50ms
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 532601580
+            format: int32
+          description: 唯一 WebSocket 请求 ID。
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: btcusdt
+          description: 交易对参数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  description: WebSocket 数据流方法名称。
+                  enum:
+                    - SUBSCRIBE
+                  example: SUBSCRIBE
+                params:
+                  type: array
+                  items:
+                    type: string
+                  description: 要订阅的数据流列表。
+                  example:
+                    - btcusdt@optionTrade
+                id:
+                  type: integer
+                  example: 532601580
+                  format: int32
+                  description: 唯一的 WebSocket 请求 ID。
+              required:
+                - method
+                - params
+                - id
+              additionalProperties: false
+            example:
+              method: SUBSCRIBE
+              params:
+                - btcusdt@optionTrade
+              id: 532601580
+      responses:
+        Raw Stream:
+          description: 成交流
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  e:
+                    type: string
+                    example: trade
+                    description: 事件类型
+                  E:
+                    type: integer
+                    example: 1762856064204
+                    format: int64
+                    description: 事件时间
+                  T:
+                    type: integer
+                    example: 1762856064203
+                    format: int64
+                    description: 成交完成时间
+                  s:
+                    type: string
+                    example: BTC-251123-126000-C
+                    description: 交易对
+                  t:
+                    type: integer
+                    example: 4
+                    format: int64
+                    description: 交易ID
+                  p:
+                    type: string
+                    example: '1300.000'
+                    description: 交易价格
+                  q:
+                    type: string
+                    example: '0.1000'
+                    description: 交易数量
+                  X:
+                    type: string
+                    example: MARKET
+                    description: 交易类型，"MARKET" 代表订单薄交易, "BLOCK"代表大宗交易
+                  S:
+                    type: string
+                    example: BUY
+                    description: 方向
+                  m:
+                    type: boolean
+                    example: false
+                    description: 买方是否是做市方。如true，则此次成交是一个主动卖出单，否则是一个主动买入单。
+              example:
+                e: trade
+                E: 1762856064204
+                T: 1762856064203
+                s: BTC-251123-126000-C
+                t: 4
+                p: '1300.000'
+                q: '0.1000'
+                X: MARKET
+                S: BUY
+                m: false
+        Combined Stream:
+          description: Stream payload with stream name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stream:
+                    type: string
+                    example: btcusdt@optionTrade
+                  data:
+                    type: object
+                    properties:
+                      e:
+                        type: string
+                        example: trade
+                        description: 事件类型
+                      E:
+                        type: integer
+                        example: 1762856064204
+                        format: int64
+                        description: 事件时间
+                      T:
+                        type: integer
+                        example: 1762856064203
+                        format: int64
+                        description: 成交完成时间
+                      s:
+                        type: string
+                        example: BTC-251123-126000-C
+                        description: 交易对
+                      t:
+                        type: integer
+                        example: 4
+                        format: int64
+                        description: 交易ID
+                      p:
+                        type: string
+                        example: '1300.000'
+                        description: 交易价格
+                      q:
+                        type: string
+                        example: '0.1000'
+                        description: 交易数量
+                      X:
+                        type: string
+                        example: MARKET
+                        description: 交易类型，"MARKET" 代表订单薄交易, "BLOCK"代表大宗交易
+                      S:
+                        type: string
+                        example: BUY
+                        description: 方向
+                      m:
+                        type: boolean
+                        example: false
+                        description: 买方是否是做市方。如true，则此次成交是一个主动卖出单，否则是一个主动买入单。
+                required:
+                  - stream
+                  - data
+                additionalProperties: false
+              example:
+                stream: btcusdt@optionTrade
+                data:
+                  e: trade
+                  E: 1762856064204
+                  T: 1762856064203
+                  s: BTC-251123-126000-C
+                  t: 4
+                  p: '1300.000'
+                  q: '0.1000'
+                  X: MARKET
+                  S: BUY
+                  m: false
+components:
+  schemas:
+    accountUpdate:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - ACCOUNT_UPDATE
+          description: 事件类型
+        E:
+          type: integer
+          example: 1762914568643
+          format: int64
+          description: 事件时间
+        T:
+          type: integer
+          example: 1762914568619
+          format: int64
+          description: 交易时间
+        eq:
+          type: string
+          example: '10000371.61462086'
+          description: 账户USDT权益
+        aeq:
+          type: string
+          example: '10000475.51032086'
+          description: 账户调整权益
+        b:
+          type: string
+          example: '10000475.51032086'
+          description: 账户USDT余额
+        m:
+          type: string
+          example: '-103.89570000'
+          description: 仓位价值
+        u:
+          type: string
+          example: '16.10430000'
+          description: 未实现盈利
+        i:
+          type: string
+          example: '32354.38562539'
+          description: 初始保证金
+        M:
+          type: string
+          example: '6089.28766956'
+          description: 维持保证金
+    balancePositionUpdate:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - BALANCE_POSITION_UPDATE
+          description: 事件类型
+        E:
+          type: integer
+          example: 1762917544216
+          format: int64
+          description: 事件时间
+        T:
+          type: integer
+          example: 1762917544206
+          format: int64
+          description: 交易时间
+        m:
+          type: string
+          example: ORDER
+          enum:
+            - DEPOSIT
+            - WITHDRAW
+            - ORDER
+          description: 事件推出原因
+        B:
+          type: array
+          description: 余额信息
+          items:
+            type: object
+            properties:
+              a:
+                type: string
+                example: USDT
+                description: 资产
+              b:
+                type: string
+                example: '10000471.37940900'
+                description: 钱包余额
+              bc:
+                type: string
+                example: '0'
+                description: 除去盈亏与交易手续费以外的钱包余额改变量
+        P:
+          type: array
+          description: 持仓
+          items:
+            type: object
+            properties:
+              s:
+                type: string
+                example: BTC-251123-126000-C
+                description: 交易对
+              c:
+                type: string
+                example: '-0.1000'
+                description: 仓位
+              p:
+                type: string
+                example: '-120.00000000'
+                description: 仓位价值
+              a:
+                type: string
+                example: '1200.00000000'
+                description: 仓位均价
+    greekUpdate:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - GREEK_UPDATE
+          description: 事件类型
+        E:
+          type: integer
+          example: 1762917544216
+          format: int64
+          description: 事件时间
+        T:
+          type: integer
+          example: 1762917544216
+          format: int64
+          description: 交易时间
+        G:
+          type: array
+          items:
+            type: object
+            properties:
+              u:
+                type: string
+                example: BTCUSDT
+                description: 标的
+              d:
+                type: string
+                example: '-0.01304097'
+                description: Delta
+              g:
+                type: string
+                example: '-0.00000124'
+                description: Gamma
+              t:
+                type: string
+                example: '16.11648100'
+                description: Theta
+              v:
+                type: string
+                example: '-3.83444011'
+                description: Vega
+    listenKeyExpired:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - listenKeyExpired
+          description: 事件类型
+        E:
+          type: string
+          example: '1736996475556'
+          description: 事件时间
+        listenKey:
+          type: string
+          example: WsCMN0a4KHUPTQuX6IUnqEZfB1inxmv1qR4kbf1LuEjur5VdbzqvyxqG9TSjVVxv
+    orderTradeUpdate:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - ORDER_TRADE_UPDATE
+          description: 事件类型
+        E:
+          type: integer
+          example: 1568879465651
+          format: int64
+          description: 事件时间
+        T:
+          type: integer
+          example: 1568879465650
+          format: int64
+          description: 交易时间
+        o:
+          type: object
+          properties:
+            s:
+              type: string
+              example: BTCUSDT
+              description: 交易对
+            c:
+              type: string
+              example: TEST
+              description: 客户端自定订单ID
+            S:
+              type: string
+              example: SELL
+              enum:
+                - BUY
+                - SELL
+              description: 方向
+            o:
+              type: string
+              example: TRAILING_STOP_MARKET
+              enum:
+                - LIMIT
+              description: 订单类型
+            f:
+              type: string
+              example: GTC
+              enum:
+                - GTC
+                - IOC
+                - FOK
+                - GTX
+              description: 有效方式
+            q:
+              type: string
+              example: '0.001'
+              description: 订单原始数量
+            p:
+              type: string
+              example: '0'
+              description: 订单原始价格
+            ap:
+              type: string
+              example: '0'
+              description: 订单平均价格
+            x:
+              type: string
+              example: NEW
+              enum:
+                - NEW
+                - CANCELED
+                - EXPIRED
+                - TRADE
+              description: 本次事件的具体执行类型
+            X:
+              type: string
+              example: NEW
+              enum:
+                - NEW
+                - PARTIALLY_FILLED
+                - FILLED
+                - CANCELED
+                - EXPIRED
+                - EXPIRED_IN_MATCH
+              description: 订单的当前状态
+            i:
+              type: integer
+              example: 8886774
+              format: int64
+              description: 订单ID
+            l:
+              type: string
+              example: '0'
+              description: 订单末次成交量
+            z:
+              type: string
+              example: '0'
+              description: 订单累计已成交量
+            L:
+              type: string
+              example: '0'
+              description: 订单末次成交价格
+            'N':
+              type: string
+              example: USDT
+              description: 手续费资产
+            'n':
+              type: string
+              example: '0'
+              description: 手续费，负数代表手续费收取
+            T:
+              type: integer
+              example: 1568879465650
+              format: int64
+              description: 交易时间
+            t:
+              type: integer
+              example: 0
+              format: int64
+              description: 交易id
+            b:
+              type: string
+              example: '0'
+              description: 买单总数量
+            a:
+              type: string
+              example: '9.91'
+              description: 卖单总数量
+            m:
+              type: boolean
+              example: false
+              description: 该成交是作为挂单成交
+            R:
+              type: boolean
+              example: false
+              description: 是否是只减仓单
+            ot:
+              type: string
+              example: TRAILING_STOP_MARKET
+              description: 原始订单类型
+            rp:
+              type: string
+              example: '0'
+              description: 该交易实现盈亏
+            V:
+              type: string
+              example: EXPIRE_TAKER
+              description: 自我交易预防模式
+    riskLevelChange:
+      type: object
+      properties:
+        e:
+          type: string
+          enum:
+            - RISK_LEVEL_CHANGE
+          description: 事件类型
+        E:
+          type: integer
+          example: 1587727187525
+          format: int64
+          description: 事件时间
+        s:
+          type: string
+          example: REDUCE_ONLY
+          enum:
+            - NORMAL
+            - REDUCE_ONLY
+          description: 风险等级
+        mb:
+          type: string
+          example: '1534.11708371'
+          description: 保证金余额
+        mm:
+          type: string
+          example: '254789.11708371'
+          description: 维持保证金
+    User Data Stream Events:
+      oneOf:
+        - $ref: '#/components/schemas/accountUpdate'
+        - $ref: '#/components/schemas/balancePositionUpdate'
+        - $ref: '#/components/schemas/greekUpdate'
+        - $ref: '#/components/schemas/listenKeyExpired'
+        - $ref: '#/components/schemas/orderTradeUpdate'
+        - $ref: '#/components/schemas/riskLevelChange'
+      discriminator:
+        propertyName: e
+        mapping:
+          ACCOUNT_UPDATE: '#/components/schemas/accountUpdate'
+          BALANCE_POSITION_UPDATE: '#/components/schemas/balancePositionUpdate'
+          GREEK_UPDATE: '#/components/schemas/greekUpdate'
+          listenKeyExpired: '#/components/schemas/listenKeyExpired'
+          ORDER_TRADE_UPDATE: '#/components/schemas/orderTradeUpdate'
+          RISK_LEVEL_CHANGE: '#/components/schemas/riskLevelChange'

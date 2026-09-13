@@ -2,8 +2,6 @@ package futures
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -268,12 +266,19 @@ func (c *Client) parseWsRequest(r *request, opts ...RequestOption) (err error) {
 		r.wsParams[apiKey] = c.APIKey
 		raw := r.wsParams.Encode()
 
-		mac := hmac.New(sha256.New, []byte(c.SecretKey))
-		_, err = mac.Write([]byte(raw))
+		kt := c.KeyType
+		if kt == "" {
+			kt = common.KeyTypeHmac
+		}
+		sf, err := common.SignFunc(kt)
 		if err != nil {
 			return err
 		}
-		r.wsParams[signatureKey] = fmt.Sprintf("%x", mac.Sum(nil))
+		sign, err := sf(c.SecretKey, raw)
+		if err != nil {
+			return err
+		}
+		r.wsParams[signatureKey] = *sign
 	}
 
 	c.debug("ws-method: %s, params: %v", r.wsMethod, r.wsParams)
