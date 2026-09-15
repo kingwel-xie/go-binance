@@ -439,8 +439,10 @@ func (c *Client) NewOpenInterestService() *OpenInterestService {
 	return &OpenInterestService{c: c}
 }
 
-func (c *Client) NewAccountService() *AccountService {
-	return &AccountService{c: c}
+// NewMarginAccountService init get option margin account information service
+// GET /eapi/v1/marginAccount
+func (c *Client) NewMarginAccountService() *MarginAccountService {
+	return &MarginAccountService{c: c}
 }
 
 // NewCreateOrderService init creating order service
