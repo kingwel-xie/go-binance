@@ -553,3 +553,38 @@ func (c *Client) NewListUserLiquidationOrdersService() *ListUserLiquidationOrder
 func (c *Client) NewListMarginForceOrdersService() *ListMarginForceOrdersService {
 	return &ListMarginForceOrdersService{c: c}
 }
+
+// NewMarginLoanService init margin loan service
+func (c *Client) NewMarginLoanService() *MarginLoanService {
+	return &MarginLoanService{c: c}
+}
+
+// NewGetMarginLoanService init get margin loan service
+func (c *Client) NewGetMarginLoanService() *GetMarginLoanService {
+	return &GetMarginLoanService{c: c}
+}
+
+// NewMarginRepayService init margin repay service
+func (c *Client) NewMarginRepayService() *MarginRepayService {
+	return &MarginRepayService{c: c}
+}
+
+// NewGetMarginRepayService init get margin repay service
+func (c *Client) NewGetMarginRepayService() *GetMarginRepayService {
+	return &GetMarginRepayService{c: c}
+}
+
+// NewMarginRepayDebtService init margin repay debt service
+func (c *Client) NewMarginRepayDebtService() *MarginRepayDebtService {
+	return &MarginRepayDebtService{c: c}
+}
+
+// NewGetMarginMaxBorrowService init margin max borrow service
+func (c *Client) NewGetMarginMaxBorrowService() *GetMarginMaxBorrowService {
+	return &GetMarginMaxBorrowService{c: c}
+}
+
+// NewGetMarginMaxWithdrawService init margin max withdraw service
+func (c *Client) NewGetMarginMaxWithdrawService() *GetMarginMaxWithdrawService {
+	return &GetMarginMaxWithdrawService{c: c}
+}
