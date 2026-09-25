@@ -240,10 +240,13 @@ func (s *MarginBorrowRepayService) Do(ctx context.Context, opts ...RequestOption
 	}
 	m := params{
 		"asset":      s.asset,
-		"isIsolated": s.isIsolated,
-		"symbol":     s.symbol,
+		"isIsolated": "FALSE",
 		"amount":     s.amount,
 		"type":       string(s._type),
+	}
+	if s.isIsolated {
+		m["isIsolated"] = "TRUE"
+		m["symbol"] = s.symbol
 	}
 	r.setFormParams(m)
 	res = new(TransactionResponse)
