@@ -60,6 +60,9 @@ type MarginLoanStatusType string
 // MarginRepayStatusType define margin repay status type
 type MarginRepayStatusType string
 
+// MarginAccountBorrowRepayType define margin account borrow or repay type
+type MarginAccountBorrowRepayType string
+
 // FuturesTransferStatusType define futures transfer status type
 type FuturesTransferStatusType string
 
@@ -184,6 +187,13 @@ const (
 	MarginRepayStatusTypePending   MarginRepayStatusType = "PENDING"
 	MarginRepayStatusTypeConfirmed MarginRepayStatusType = "CONFIRMED"
 	MarginRepayStatusTypeFailed    MarginRepayStatusType = "FAILED"
+
+	MarginAccountBorrow MarginAccountBorrowRepayType = "BORROW"
+	MarginAccountRepay  MarginAccountBorrowRepayType = "REPAY"
+
+	MarginAccountBorrowRepayStatusPending   string = "PENDING"
+	MarginAccountBorrowRepayStatusConfirmed string = "CONFIRMED"
+	MarginAccountBorrowRepayStatusFailed    string = "FAILED"
 
 	FuturesTransferStatusTypePending   FuturesTransferStatusType = "PENDING"
 	FuturesTransferStatusTypeConfirmed FuturesTransferStatusType = "CONFIRMED"
@@ -749,6 +759,16 @@ func (c *Client) NewMarginLoanService() *MarginLoanService {
 // NewMarginRepayService init margin account repay service
 func (c *Client) NewMarginRepayService() *MarginRepayService {
 	return &MarginRepayService{c: c}
+}
+
+// NewMarginBorrowRepayService init margin account borrow/repay service
+func (c *Client) NewMarginBorrowRepayService() *MarginBorrowRepayService {
+	return &MarginBorrowRepayService{c: c}
+}
+
+// NewListMarginBorrowRepayService init margin account borrow/repay query service
+func (c *Client) NewListMarginBorrowRepayService() *ListMarginBorrowRepayService {
+	return &ListMarginBorrowRepayService{c: c}
 }
 
 // NewCreateMarginOrderService init creating margin order service
