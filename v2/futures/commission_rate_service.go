@@ -44,4 +44,9 @@ type CommissionRate struct {
 	Symbol              string `json:"symbol"`
 	MakerCommissionRate string `json:"makerCommissionRate"`
 	TakerCommissionRate string `json:"takerCommissionRate"`
+	Discount            struct {
+		EnabledForAccount bool   `json:"enabledForAccount"`
+		EnabledForSymbol  bool   `json:"enabledForSymbol"`
+		DiscountRate      string `json:"discountRate"`
+	} `json:"discount"`
 }
