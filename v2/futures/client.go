@@ -697,3 +697,23 @@ func (c *Client) NewOpenInterestStatisticsService() *OpenInterestStatisticsServi
 func (c *Client) NewLongShortRatioService() *LongShortRatioService {
 	return &LongShortRatioService{c: c}
 }
+
+// NewListConvertExchangeInfoService init list convert exchange info service
+func (c *Client) NewListConvertExchangeInfoService() *ListConvertExchangeInfoService {
+	return &ListConvertExchangeInfoService{c: c}
+}
+
+// NewCreateConvertQuoteService init create convert quote service
+func (c *Client) NewCreateConvertQuoteService() *CreateConvertQuoteService {
+	return &CreateConvertQuoteService{c: c}
+}
+
+// NewConvertAcceptService init accept convert quote service
+func (c *Client) NewConvertAcceptService() *ConvertAcceptService {
+	return &ConvertAcceptService{c: c}
+}
+
+// NewGetConvertStatusService init get convert status service
+func (c *Client) NewGetConvertStatusService() *ConvertStatusService {
+	return &ConvertStatusService{c: c}
+}

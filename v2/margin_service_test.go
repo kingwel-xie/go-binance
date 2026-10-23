@@ -105,8 +105,7 @@ func (s *marginTestSuite) TestBorrowRepayBorrow() {
 		e := newSignedRequest().setFormParams(params{
 			"asset":      asset,
 			"amount":     amount,
-			"isIsolated": false,
-			"symbol":     "",
+			"isIsolated": "FALSE",
 			"type":       string(_type),
 		})
 		s.assertRequestEqual(e, r)
@@ -136,8 +135,7 @@ func (s *marginTestSuite) TestBorrowRepayRepay() {
 		e := newSignedRequest().setFormParams(params{
 			"asset":      asset,
 			"amount":     amount,
-			"isIsolated": false,
-			"symbol":     "",
+			"isIsolated": "FALSE",
 			"type":       string(_type),
 		})
 		s.assertRequestEqual(e, r)
