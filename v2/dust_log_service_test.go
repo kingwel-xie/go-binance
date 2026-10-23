@@ -40,7 +40,8 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
                         "amount": "0.0009",
                         "operateTime": 1615985535000,
                         "transferedAmount": "0.000441",
-                        "fromAsset": "USDT"
+                        "fromAsset": "USDT",
+                        "targetAsset": "BNB"
                     },
                     {
                         "transId": 4359321,
@@ -48,7 +49,8 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
                         "amount": "0.0009",
                         "operateTime": 1615985535000,
                         "transferedAmount": "0.00088156",
-                        "fromAsset": "ETH"
+                        "fromAsset": "ETH",
+                        "targetAsset": "BNB"
                     }
                 ]
             },
@@ -64,7 +66,8 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
                         "amount": "0.001",
                         "operateTime": 1616203180000,
                         "transferedAmount": "0.00049",
-                        "fromAsset": "USDT"
+                        "fromAsset": "USDT",
+                        "targetAsset": "BNB"
                     },
                     {
                         "transId": 4357015,
@@ -72,7 +75,8 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
                         "amount": "0.0001",
                         "operateTime": 1616203180000,
                         "transferedAmount": "0.00009795",
-                        "fromAsset": "ETH"
+                        "fromAsset": "ETH",
+                        "targetAsset": "BNB"
                     }
                 ]
             }
@@ -83,13 +87,14 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
 	defer s.assertDo()
 
 	s.assertReq(func(r *request) {
-		e := newSignedRequest()
+		e := newSignedRequest().setParam("accountType", AccountTypeSpot)
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewListDustLogService().Do(context.Background())
+	res, err := s.client.NewListDustLogService().AccountType(AccountTypeSpot).Do(context.Background())
 	r := s.r()
 	r.NoError(err)
+	r.Equal(int64(8), res.Total)
 	rows := res.UserAssetDribblets
 	s.Len(rows, 2)
 	s.Len(rows[0].UserAssetDribbletDetails, 2)
@@ -107,6 +112,7 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
 				OperateTime:         1615985535000,
 				TransferedAmount:    "0.000441",
 				FromAsset:           "USDT",
+				TargetAsset:         "BNB",
 			},
 			{
 				TransID:             4359321,
@@ -115,6 +121,7 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
 				OperateTime:         1615985535000,
 				TransferedAmount:    "0.00088156",
 				FromAsset:           "ETH",
+				TargetAsset:         "BNB",
 			},
 		},
 	}, &rows[0])
@@ -130,6 +137,7 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
 				OperateTime:         1616203180000,
 				TransferedAmount:    "0.00049",
 				FromAsset:           "USDT",
+				TargetAsset:         "BNB",
 			},
 			{
 				TransID:             4357015,
@@ -138,6 +146,7 @@ func (s *listDustLogServiceTestSuite) TestListDustLog() {
 				OperateTime:         1616203180000,
 				TransferedAmount:    "0.00009795",
 				FromAsset:           "ETH",
+				TargetAsset:         "BNB",
 			},
 		},
 		OperateTime: 1616203180000,
@@ -162,6 +171,7 @@ func (s *listDustLogServiceTestSuite) assertUserAssetDribbletDetailEqual(e, a *U
 	r.Equal(e.OperateTime, a.OperateTime, `OperateTime`)
 	r.Equal(e.TransferedAmount, a.TransferedAmount, `TransferedAmount`)
 	r.Equal(e.FromAsset, a.FromAsset, `FromAsset`)
+	r.Equal(e.TargetAsset, a.TargetAsset, `TargetAsset`)
 }
 
 type dustTransferTestSuite struct {
@@ -207,13 +217,13 @@ func (s *dustTransferTestSuite) TestTransfer() {
 	defer s.assertDo()
 	asset := []string{"ETH", "LTC", "TRX"}
 	s.assertReq(func(r *request) {
-		e := newSignedRequest()
+		e := newSignedRequest().setParam("accountType", AccountTypeMargin)
 		for _, a := range asset {
 			e.addParam("asset", a)
 		}
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewDustTransferService().Asset(asset).Do(newContext())
+	res, err := s.client.NewDustTransferService().Asset(asset).AccountType(AccountTypeMargin).Do(newContext())
 	s.r().NoError(err)
 	e := &DustTransferResponse{
 		TotalServiceCharge: "0.02102542",
@@ -290,7 +300,11 @@ func (s *listDustTestSuite) TestListDust() {
 		}`)
 	s.mockDo(data, nil)
 	defer s.assertDo()
-	res, err := s.client.NewListDustService().Do(newContext())
+	s.assertReq(func(r *request) {
+		e := newSignedRequest().setParam("accountType", AccountTypeSpot)
+		s.assertRequestEqual(e, r)
+	})
+	res, err := s.client.NewListDustService().AccountType(AccountTypeSpot).Do(newContext())
 	s.r().NoError(err)
 	e := &ListDustResponse{
 		Details: []ListDustDetail{

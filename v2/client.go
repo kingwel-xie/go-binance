@@ -964,7 +964,7 @@ func (c *Client) NewGetAllCoinsInfoService() *GetAllCoinsInfoService {
 	return &GetAllCoinsInfoService{c: c}
 }
 
-// NewDustTransferService init Get All Margin Assets service
+// NewGetAllMarginAssetsService init Get All Margin Assets service
 func (c *Client) NewGetAllMarginAssetsService() *GetAllMarginAssetsService {
 	return &GetAllMarginAssetsService{c: c}
 }

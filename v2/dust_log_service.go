@@ -17,9 +17,17 @@ import (
 // ListDustLogService fetch small amounts of assets exchanged versus BNB
 // See https://binance-docs.github.io/apidocs/spot/en/#dustlog-user_data
 type ListDustLogService struct {
-	c         *Client
-	startTime *int64
-	endTime   *int64
+	c           *Client
+	accountType *AccountType
+	startTime   *int64
+	endTime     *int64
+}
+
+// AccountType sets the accountType parameter.
+// Supported values: AccountTypeSpot, AccountTypeMargin. Defaults to SPOT.
+func (s *ListDustLogService) AccountType(accountType AccountType) *ListDustLogService {
+	s.accountType = &accountType
+	return s
 }
 
 // StartTime sets the startTime parameter.
@@ -37,11 +45,14 @@ func (s *ListDustLogService) EndTime(endTime int64) *ListDustLogService {
 }
 
 // Do sends the request.
-func (s *ListDustLogService) Do(ctx context.Context) (withdraws *DustResult, err error) {
+func (s *ListDustLogService) Do(ctx context.Context, opts ...RequestOption) (withdraws *DustResult, err error) {
 	r := &request{
 		method:   http.MethodGet,
 		endpoint: "/sapi/v1/asset/dribblet",
 		secType:  secTypeSigned,
+	}
+	if s.accountType != nil {
+		r.setParam("accountType", *s.accountType)
 	}
 	if s.startTime != nil {
 		r.setParam("startTime", *s.startTime)
@@ -49,7 +60,7 @@ func (s *ListDustLogService) Do(ctx context.Context) (withdraws *DustResult, err
 	if s.endTime != nil {
 		r.setParam("endTime", *s.endTime)
 	}
-	data, _, err := s.c.callAPI(ctx, r)
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}
@@ -63,7 +74,7 @@ func (s *ListDustLogService) Do(ctx context.Context) (withdraws *DustResult, err
 
 // DustResult represents the result of a DustLog API Call.
 type DustResult struct {
-	Total              uint8               `json:"total"` //Total counts of exchange
+	Total              int64               `json:"total"` //Total counts of exchange
 	UserAssetDribblets []UserAssetDribblet `json:"userAssetDribblets"`
 }
 
@@ -78,19 +89,21 @@ type UserAssetDribblet struct {
 
 // DustLog represents one dust log informations
 type UserAssetDribbletDetail struct {
-	TransID             int    `json:"transId"`
+	TransID             int64  `json:"transId"`
 	ServiceChargeAmount string `json:"serviceChargeAmount"`
 	Amount              string `json:"amount"`
 	OperateTime         int64  `json:"operateTime"` //The time of this exchange.
 	TransferedAmount    string `json:"transferedAmount"`
 	FromAsset           string `json:"fromAsset"`
+	TargetAsset         string `json:"targetAsset"`
 }
 
 // DustTransferService convert dust assets to BNB.
 // See https://binance-docs.github.io/apidocs/spot/en/#dust-transfer-user_data
 type DustTransferService struct {
-	c     *Client
-	asset []string
+	c           *Client
+	asset       []string
+	accountType *AccountType
 }
 
 // Asset set asset.
@@ -99,8 +112,15 @@ func (s *DustTransferService) Asset(asset []string) *DustTransferService {
 	return s
 }
 
+// AccountType sets the accountType parameter.
+// Supported values: AccountTypeSpot, AccountTypeMargin. Defaults to SPOT.
+func (s *DustTransferService) AccountType(accountType AccountType) *DustTransferService {
+	s.accountType = &accountType
+	return s
+}
+
 // Do sends the request.
-func (s *DustTransferService) Do(ctx context.Context) (withdraws *DustTransferResponse, err error) {
+func (s *DustTransferService) Do(ctx context.Context, opts ...RequestOption) (withdraws *DustTransferResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: "/sapi/v1/asset/dust",
@@ -109,7 +129,10 @@ func (s *DustTransferService) Do(ctx context.Context) (withdraws *DustTransferRe
 	for _, a := range s.asset {
 		r.addParam("asset", a)
 	}
-	data, _, err := s.c.callAPI(ctx, r)
+	if s.accountType != nil {
+		r.setParam("accountType", *s.accountType)
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}
@@ -141,17 +164,28 @@ type DustTransferResult struct {
 // ListDustService get list of dust to BNB.
 // See https://binance-docs.github.io/apidocs/spot/en/#get-assets-that-can-be-converted-into-bnb-user_data
 type ListDustService struct {
-	c *Client
+	c           *Client
+	accountType *AccountType
+}
+
+// AccountType sets the accountType parameter.
+// Supported values: AccountTypeSpot, AccountTypeMargin. Defaults to SPOT.
+func (s *ListDustService) AccountType(accountType AccountType) *ListDustService {
+	s.accountType = &accountType
+	return s
 }
 
 // Do sends the request.
-func (s *ListDustService) Do(ctx context.Context) (res *ListDustResponse, err error) {
+func (s *ListDustService) Do(ctx context.Context, opts ...RequestOption) (res *ListDustResponse, err error) {
 	r := &request{
 		method:   http.MethodPost,
 		endpoint: "/sapi/v1/asset/dust-btc",
 		secType:  secTypeSigned,
 	}
-	data, _, err := s.c.callAPI(ctx, r)
+	if s.accountType != nil {
+		r.setParam("accountType", *s.accountType)
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
 		return
 	}
