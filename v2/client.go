@@ -106,6 +106,15 @@ type RateLimitInterval string
 // AccountType define the account types
 type AccountType string
 
+// SimpleEarnSubscribeSourceAccount define the simple-earn subscribe source account
+type SimpleEarnSubscribeSourceAccount string
+
+// RedeemTo define the simple-earn locked redeem destination
+type RedeemTo string
+
+// SimpleEarnRewardsType define the simple-earn flexible rewards history type
+type SimpleEarnRewardsType string
+
 // Endpoints
 var (
 	BaseAPIMainURL    = "https://api.binance.com"
@@ -214,6 +223,18 @@ const (
 
 	LiquidityOperationTypeCombination LiquidityOperationType = "COMBINATION"
 	LiquidityOperationTypeSingle      LiquidityOperationType = "SINGLE"
+
+	SimpleEarnSourceAccountSpot SimpleEarnSubscribeSourceAccount = "SPOT"
+	SimpleEarnSourceAccountFund SimpleEarnSubscribeSourceAccount = "FUND"
+	SimpleEarnSourceAccountAll  SimpleEarnSubscribeSourceAccount = "ALL"
+
+	RedeemToSpot     RedeemTo = "SPOT"
+	RedeemToFlexible RedeemTo = "FLEXIBLE"
+
+	SimpleEarnRewardsTypeBonus    SimpleEarnRewardsType = "BONUS"
+	SimpleEarnRewardsTypeRealtime SimpleEarnRewardsType = "REALTIME"
+	SimpleEarnRewardsTypeRewards  SimpleEarnRewardsType = "REWARDS"
+	SimpleEarnRewardsTypeAll      SimpleEarnRewardsType = "ALL"
 
 	apiKey        = "apiKey"
 	timestampKey  = "timestamp"
@@ -1212,6 +1233,51 @@ func (c *Client) NewListSimpleEarnFlexibleRateHistoryService() *ListSimpleEarnFl
 // NewGetSimpleEarnLockedPositionService returns simple-earn locked position service
 func (c *Client) NewGetSimpleEarnLockedPositionService() *GetSimpleEarnLockedPositionService {
 	return &GetSimpleEarnLockedPositionService{c: c}
+}
+
+// NewGetSimpleEarnFlexibleQuotaService returns simple-earn flexible personal left quota service
+func (c *Client) NewGetSimpleEarnFlexibleQuotaService() *GetSimpleEarnFlexibleQuotaService {
+	return &GetSimpleEarnFlexibleQuotaService{c: c}
+}
+
+// NewGetSimpleEarnLockedQuotaService returns simple-earn locked personal left quota service
+func (c *Client) NewGetSimpleEarnLockedQuotaService() *GetSimpleEarnLockedQuotaService {
+	return &GetSimpleEarnLockedQuotaService{c: c}
+}
+
+// NewSetSimpleEarnFlexibleAutoSubscribeService set simple-earn flexible auto subscribe service
+func (c *Client) NewSetSimpleEarnFlexibleAutoSubscribeService() *SetSimpleEarnFlexibleAutoSubscribeService {
+	return &SetSimpleEarnFlexibleAutoSubscribeService{c: c}
+}
+
+// NewSetSimpleEarnLockedAutoSubscribeService set simple-earn locked auto subscribe service
+func (c *Client) NewSetSimpleEarnLockedAutoSubscribeService() *SetSimpleEarnLockedAutoSubscribeService {
+	return &SetSimpleEarnLockedAutoSubscribeService{c: c}
+}
+
+// NewGetSimpleEarnFlexibleSubscriptionPreviewService returns simple-earn flexible subscription preview service
+func (c *Client) NewGetSimpleEarnFlexibleSubscriptionPreviewService() *GetSimpleEarnFlexibleSubscriptionPreviewService {
+	return &GetSimpleEarnFlexibleSubscriptionPreviewService{c: c}
+}
+
+// NewGetSimpleEarnLockedSubscriptionPreviewService returns simple-earn locked subscription preview service
+func (c *Client) NewGetSimpleEarnLockedSubscriptionPreviewService() *GetSimpleEarnLockedSubscriptionPreviewService {
+	return &GetSimpleEarnLockedSubscriptionPreviewService{c: c}
+}
+
+// NewSetSimpleEarnLockedRedeemOptionService set simple-earn locked redeem option service
+func (c *Client) NewSetSimpleEarnLockedRedeemOptionService() *SetSimpleEarnLockedRedeemOptionService {
+	return &SetSimpleEarnLockedRedeemOptionService{c: c}
+}
+
+// NewListSimpleEarnFlexibleRewardsHistoryService returns simple-earn flexible rewards history service
+func (c *Client) NewListSimpleEarnFlexibleRewardsHistoryService() *ListSimpleEarnFlexibleRewardsHistoryService {
+	return &ListSimpleEarnFlexibleRewardsHistoryService{c: c}
+}
+
+// NewListSimpleEarnLockedRewardsHistoryService returns simple-earn locked rewards history service
+func (c *Client) NewListSimpleEarnLockedRewardsHistoryService() *ListSimpleEarnLockedRewardsHistoryService {
+	return &ListSimpleEarnLockedRewardsHistoryService{c: c}
 }
 
 // NewListLoanableCoinService returns crypto-loan list locked loanable data service
