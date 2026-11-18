@@ -1438,3 +1438,13 @@ func (c *Client) NewSolRedeemService() *SolRedeemService {
 func (c *Client) NewCommissionRateService() *CommissionRateService {
 	return &CommissionRateService{c: c}
 }
+
+// NewGetPortfolioMarginCollateralRateService gets portfolio margin collateral rate
+func (c *Client) NewGetPortfolioMarginCollateralRateService() *GetPortfolioMarginCollateralRateService {
+	return &GetPortfolioMarginCollateralRateService{c: c}
+}
+
+// NewGetPortfolioMarginTieredCollateralRateService gets portfolio margin tiered collateral rate
+func (c *Client) NewGetPortfolioMarginTieredCollateralRateService() *GetPortfolioMarginTieredCollateralRateService {
+	return &GetPortfolioMarginTieredCollateralRateService{c: c}
+}
