@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -337,7 +336,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	}
 	req = req.WithContext(ctx)
 	req.Header = r.header
-	c.debug("request: %#v\n", req)
+	c.debug("request: %s %s\n", req.Method, common.MaskSignature(req.URL.String()))
 	f := c.do
 	if f == nil {
 		f = c.HTTPClient.Do
@@ -367,15 +366,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	c.debug("response status code: %d\n", res.StatusCode)
 
 	if res.StatusCode >= http.StatusBadRequest {
-		apiErr := new(common.APIError)
-		e := json.Unmarshal(data, apiErr)
-		if e != nil {
-			c.debug("failed to unmarshal json: %s\n", e)
-		}
-		if !apiErr.IsValid() {
-			apiErr.Response = data
-		}
-		return nil, &res.Header, apiErr
+		return nil, &res.Header, common.NewAPIError(res.StatusCode, data)
 	}
 	return data, &res.Header, nil
 }

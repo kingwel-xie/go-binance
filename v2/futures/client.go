@@ -3,7 +3,6 @@ package futures
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -395,7 +394,7 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	}
 	req = req.WithContext(ctx)
 	req.Header = r.header
-	c.debug("request: %#v", req)
+	c.debug("request: %s %s", req.Method, common.MaskSignature(req.URL.String()))
 	f := c.do
 	if f == nil {
 		f = c.HTTPClient.Do
@@ -420,16 +419,11 @@ func (c *Client) callAPI(ctx context.Context, r *request, opts ...RequestOption)
 	c.debug("response body: %s", string(data))
 	c.debug("response status code: %d", res.StatusCode)
 
+	rateLimits := RateLimitsFromHeader(&res.Header)
 	if res.StatusCode >= http.StatusBadRequest {
-		apiErr := new(common.APIError)
-		e := json.Unmarshal(data, apiErr)
-		if e != nil {
-			apiErr.Response = data
-			c.debug("failed to unmarshal json: %s", e)
-		}
-		return nil, nil, apiErr
+		return nil, rateLimits, common.NewAPIError(res.StatusCode, data)
 	}
-	return data, RateLimitsFromHeader(&res.Header), nil
+	return data, rateLimits, nil
 }
 
 // SetApiEndpoint set api Endpoint
