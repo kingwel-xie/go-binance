@@ -17,6 +17,19 @@ func TestPortfolioMarginService(t *testing.T) {
 func (s *portfolioMarginServiceTestSuite) collateralRateData() []byte {
 	return []byte(`[
     {
+        "asset": "USDC",
+        "collateralRate": "1.0000"
+    },
+    {
+        "asset": "BTC",
+        "collateralRate": "0.9000"
+    }
+]`)
+}
+
+func (s *portfolioMarginServiceTestSuite) tieredCollateralRateData() []byte {
+	return []byte(`[
+    {
         "asset": "BNB",
         "collateralInfo": [
             {
@@ -50,6 +63,15 @@ func (s *portfolioMarginServiceTestSuite) collateralRateData() []byte {
 func (s *portfolioMarginServiceTestSuite) assertCollateralRate(res []*PortfolioMarginCollateralRate) {
 	r := s.r()
 	r.Len(res, 2)
+	r.Equal("USDC", res[0].Asset)
+	r.Equal("1.0000", res[0].CollateralRate)
+	r.Equal("BTC", res[1].Asset)
+	r.Equal("0.9000", res[1].CollateralRate)
+}
+
+func (s *portfolioMarginServiceTestSuite) assertTieredCollateralRate(res []*PortfolioMarginTieredCollateralRate) {
+	r := s.r()
+	r.Len(res, 2)
 	r.Equal("BNB", res[0].Asset)
 	r.Len(res[0].CollateralInfo, 2)
 	tier := res[0].CollateralInfo[0]
@@ -58,6 +80,7 @@ func (s *portfolioMarginServiceTestSuite) assertCollateralRate(res []*PortfolioM
 	r.Equal("1.0000", tier.CollateralRate)
 	r.Equal("0.0000", tier.Cum)
 	r.Equal("0.9000", res[0].CollateralInfo[1].CollateralRate)
+	r.Equal("5.0000", res[0].CollateralInfo[1].Cum)
 	r.Equal("BTC", res[1].Asset)
 	r.Len(res[1].CollateralInfo, 1)
 }
@@ -66,7 +89,7 @@ func (s *portfolioMarginServiceTestSuite) TestGetCollateralRate() {
 	s.mockDo(s.collateralRateData(), nil)
 	defer s.assertDo()
 	s.assertReq(func(r *request) {
-		e := newSignedRequest()
+		e := newRequest()
 		s.assertRequestEqual(e, r)
 	})
 
@@ -76,14 +99,27 @@ func (s *portfolioMarginServiceTestSuite) TestGetCollateralRate() {
 }
 
 func (s *portfolioMarginServiceTestSuite) TestGetTieredCollateralRate() {
-	s.mockDo(s.collateralRateData(), nil)
+	s.mockDo(s.tieredCollateralRateData(), nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newSignedRequest()
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewGetPortfolioMarginTieredCollateralRateService().Do(newContext())
+	s.r().NoError(err)
+	s.assertTieredCollateralRate(res)
+}
+
+func (s *portfolioMarginServiceTestSuite) TestGetRetailTieredCollateralRate() {
+	s.mockDo(s.tieredCollateralRateData(), nil)
 	defer s.assertDo()
 	s.assertReq(func(r *request) {
 		e := newRequest()
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewGetPortfolioMarginTieredCollateralRateService().Do(newContext())
+	res, err := s.client.NewGetPortfolioMarginRetailTieredCollateralRateService().Do(newContext())
 	s.r().NoError(err)
-	s.assertCollateralRate(res)
+	s.assertTieredCollateralRate(res)
 }

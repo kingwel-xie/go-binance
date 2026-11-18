@@ -1439,7 +1439,12 @@ func (c *Client) NewGetPortfolioMarginCollateralRateService() *GetPortfolioMargi
 	return &GetPortfolioMarginCollateralRateService{c: c}
 }
 
-// NewGetPortfolioMarginTieredCollateralRateService gets portfolio margin tiered collateral rate
+// NewGetPortfolioMarginTieredCollateralRateService gets portfolio margin pro tiered collateral rate
 func (c *Client) NewGetPortfolioMarginTieredCollateralRateService() *GetPortfolioMarginTieredCollateralRateService {
 	return &GetPortfolioMarginTieredCollateralRateService{c: c}
+}
+
+// NewGetPortfolioMarginRetailTieredCollateralRateService gets portfolio margin retail tiered collateral rate
+func (c *Client) NewGetPortfolioMarginRetailTieredCollateralRateService() *GetPortfolioMarginRetailTieredCollateralRateService {
+	return &GetPortfolioMarginRetailTieredCollateralRateService{c: c}
 }
