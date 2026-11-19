@@ -123,3 +123,31 @@ func (s *portfolioMarginServiceTestSuite) TestGetRetailTieredCollateralRate() {
 	s.r().NoError(err)
 	s.assertTieredCollateralRate(res)
 }
+
+func (s *portfolioMarginServiceTestSuite) TestGetAssetLeverage() {
+	data := []byte(`[
+    {
+        "asset": "USDC",
+        "leverage": 10
+    },
+    {
+        "asset": "BTC",
+        "leverage": 10
+    }
+]`)
+	s.mockDo(data, nil)
+	defer s.assertDo()
+	s.assertReq(func(r *request) {
+		e := newSignedRequest()
+		s.assertRequestEqual(e, r)
+	})
+
+	res, err := s.client.NewGetPortfolioMarginAssetLeverageService().Do(newContext())
+	r := s.r()
+	r.NoError(err)
+	r.Len(res, 2)
+	r.Equal("USDC", res[0].Asset)
+	r.Equal(int64(10), res[0].Leverage)
+	r.Equal("BTC", res[1].Asset)
+	r.Equal(int64(10), res[1].Leverage)
+}

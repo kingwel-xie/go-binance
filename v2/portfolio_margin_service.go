@@ -86,6 +86,32 @@ func (s *GetPortfolioMarginRetailTieredCollateralRateService) Do(ctx context.Con
 	return res, nil
 }
 
+// GetPortfolioMarginAssetLeverageService gets the leverage supported by each asset
+// for portfolio margin accounts (USER_DATA).
+// See https://developers.binance.com/en/docs/derivatives-trading-portfolio-margin-pro/market-data/rest-api
+type GetPortfolioMarginAssetLeverageService struct {
+	c *Client
+}
+
+// Do sends the request.
+func (s *GetPortfolioMarginAssetLeverageService) Do(ctx context.Context, opts ...RequestOption) (res []*PortfolioMarginAssetLeverage, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/sapi/v1/portfolio/margin-asset-leverage",
+		secType:  secTypeSigned,
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return
+	}
+	res = make([]*PortfolioMarginAssetLeverage, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return
+	}
+	return res, nil
+}
+
 // PortfolioMarginCollateralRate represents the collateral rate of one asset.
 type PortfolioMarginCollateralRate struct {
 	Asset          string `json:"asset"`
@@ -104,4 +130,10 @@ type PortfolioMarginTieredCollateralRateTierDetail struct {
 	TierCap        string `json:"tierCap"`
 	CollateralRate string `json:"collateralRate"`
 	Cum            string `json:"cum"`
+}
+
+// PortfolioMarginAssetLeverage represents the leverage supported by one asset.
+type PortfolioMarginAssetLeverage struct {
+	Asset    string `json:"asset"`
+	Leverage int64  `json:"leverage"`
 }
