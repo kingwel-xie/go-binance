@@ -97,7 +97,9 @@ func NewDataStreamClient(oc *Client, handler WsUserDataHandler, errHandler ErrHa
 		WsConn:     c,
 		wsState:    WsConnected,
 	}
-	client.handleDisconnected(c.Done, handler, errHandler)
+	// The user-data subscription lives on the session, and the generic reconnect
+	// only re-dials (no subscribe, no handlers): the caller owns the stream
+	// lifecycle and rebuilds the client on WsConn.Done instead.
 
 	r := &request{
 		secType:  secTypeSigned,

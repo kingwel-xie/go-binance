@@ -226,7 +226,7 @@ func makeConn(handler WsUserDataHandler, errHandler ErrHandler) *WsConnection {
 	}
 }
 
-func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHandler, errHandler ErrHandler) {
+func (c *Client) handleDisconnected(ch chan struct{}) {
 	go func() {
 		select {
 		case <-ch:
@@ -242,19 +242,14 @@ func (c *Client) handleDisconnected(ch chan struct{}, eventHandler WsUserDataHan
 		defer ticker.Stop()
 
 		for {
-			// 使用 select 语句同时等待超时和上下文完成
 			select {
-			//case <-sm.ctx.Done():
-			//	// 上下文已完成，可能是超时或取消
-			//	log.Info("%s stream, context terminated...", sm.name)
-			//	return
 			case <-ticker.C:
 				conn := makeConn(nil, nil)
 				if conn != nil {
 					c.WsConn = conn
 					atomic.StoreInt32((*int32)(&c.wsState), int32(WsConnected))
 					// well done, break the loop
-					c.handleDisconnected(conn.Done, eventHandler, errHandler)
+					c.handleDisconnected(conn.Done)
 
 					c.debug("reconnected with %s", c.BaseURL)
 					return
